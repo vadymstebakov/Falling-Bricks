@@ -1,5 +1,4 @@
-document.addEventListener('DOMContentLoaded', function(event) {
-
+document.addEventListener('DOMContentLoaded', function() {
     var elBg = document.getElementById('bg');
     var elBucket = document.getElementById('bucket');
     var elBrick = document.getElementsByClassName('brick');
@@ -7,43 +6,83 @@ document.addEventListener('DOMContentLoaded', function(event) {
     var recNumber = 0;
     var brickSet = [];
 
-    // Ведро
-    elBg.addEventListener('mousemove', function(event) {
-        event = event || window.event;
-        var bgCoords = this.getBoundingClientRect(); // координаты elBg относительно окна
-        var bgInnerCoords = {
-            left: bgCoords.left + elBg.clientLeft // координаты левого-нижнего внутреннего угла elBg
-        };
-        var backetCoords = {                                                      // сдвиг относительно поля (т.к. position:relative)
-            left: event.clientX - bgInnerCoords.left - elBucket.clientWidth / 2  // и сдвиг на половину ширины
-        };                                                                      // (!) используются координаты относительно окна clientX/Y, как и в bgCoords
-
-        if (backetCoords.left < 0) backetCoords.left = 0;  // вылезает за левую границу - разместить по ней
-        if (backetCoords.left + elBucket.clientWidth > elBg.clientWidth) {
-            backetCoords.left = elBg.clientWidth - elBucket.clientWidth;  // вылезает за правую границу - разместить по ней
-        }
-
-        elBucket.style.left = backetCoords.left + 'px';
-	});
+    // Position Bucket
+    elBucket.addEventListener('mousedown', function(e) {
+		var backetCoords = getCoords(elBucket);
+		var shiftX = e.pageX - backetCoords.left;
+		var bgCoords =  getCoords(elBg);
+		
+		document.onmousemove = function(e) {
+			var newLeft = e.pageX - shiftX - bgCoords.left;
+			var rightEdge = elBg.offsetWidth - elBucket.offsetWidth;
 	
-	console.log(outerHeight);
+			if (newLeft < 0) {
+			  	newLeft = 0;
+			}
+			if (newLeft > rightEdge) {
+			  	newLeft = rightEdge;
+			}
+	
+			elBucket.style.left = newLeft + 'px';
+		}
+
+		document.onmouseup = function() {
+			document.onmousemove = document.onmouseup = null;
+		}
+
+		return false;
+	});
+
+	elBucket.ondragstart = function() {
+		return false;
+	}
+
+	function getCoords(elem) {
+		var box = elem.getBoundingClientRect();
+
+		return {
+			top: box.top + pageYOffset,
+			left: box.left + pageXOffset
+		};
+	}
 
 
-    // Кирпичи
+    // Brick
     for (let i = 0; i < elBrick.length; i++) {
-        // console.log(elBrick[i]);
-
-        setInterval(function(elBrick){
+				
+        function forFall(elBrick) {
             if(!brickSet[i]) {
                 brickSet[i] = 1;
             } else {
                 brickSet[i]++;
-                elBrick.style.top = brickSet[i] + 'px';
+				elBrick.style.top = brickSet[i] + 'px';
             }
-        }, Math.random() * 10, elBrick[i]);
+		}
+		
+		setInterval(function(elBrick) {
+			forFall(elBrick);
+		}, Math.round(Math.random() * 10), elBrick[i]);
+		
+		function fall() {
+			if (checkCatching()) {
+				brickSet[i] = 1;
+				recNumber++;
+				rec.innerHTML = recNumber;
+				// var brickCount = localStorage.getItem('0');
+				// brickCount++;
+				// localStorage.setItem(0, brickCount);
+			}
+			if (checkFail()) {
+				brickSet[i] = 1;
+			}
+		}
 
-        function checkCatching(elBrick) {
-            var elBrickX = elBrick[i].getBoundingClientRect().left;
+		var fallTime = setInterval(function() {
+			fall();
+		}, 10);
+
+        function checkCatching() {
+			var elBrickX = elBrick[i].getBoundingClientRect().left;
             var elBrickY = elBrick[i].getBoundingClientRect().top;
             var elBucketX = elBucket.getBoundingClientRect().left;
             var elBucketY = elBucket.getBoundingClientRect().top;
@@ -51,36 +90,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
             return (elBrickY > elBucketY &&
                     elBrickX > elBucketX && 
                     elBrickX < elBucketX + parseInt(elBucket.width));
-		};
+		}
 
-        function checkFail(elBrick) {
-			console.log(parseInt(elBrick[i].style.top));
+        function checkFail() {
             return (parseInt(elBrick[i].style.top) > outerHeight);
-        };
+        }
 
-        function fall(){
-            var falling = setInterval(function(){
-
-                if (checkCatching(elBrick)) {
-                    brickSet[i] = 1;
-                    recNumber++;
-                    rec.innerHTML = recNumber;
-                    var brickCount = localStorage.getItem('0');
-                    brickCount++;
-                    localStorage.setItem(0, brickCount);
-                }
-
-                if (checkFail(elBrick)) {
-                    brickSet[i] = 1;
-                    console.log('ss');
-                }
-
-            }, Math.random() * 10, elBrick[i])
-        };
-
-        fall();
-       
-    };
+    }
 
     
 });
