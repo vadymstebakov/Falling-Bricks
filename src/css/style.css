@@ -1,45 +1,56 @@
-html, body{
+html, body {
     height: 100%;
 }
 
-body{
+body {
     margin: 0;
-    overflow-y: hidden;
+    overflow: hidden;
 }
 
-#bg{
-    background: url('../img/stroyka_4_01.jpg') no-repeat center;
+#bg {
+    background: url('../img/stroyka_4_01.jpg') no-repeat center center;
     position: relative;
-    height: 100%;
+    min-height: 100%;
     background-size: cover;
-    margin: 0 auto;
 }
 
-.record{
+.score {
     text-align: center;
     position: absolute;
     top: 50%;
-    margin-top: -23px;
-    left: 50%;
-    margin-left: -184px;
+	left: 50%;
+	transform: translate(-50%, -50%);
     font-size: 40px;
     font-weight: 700;
-    opacity: 0.8;
+	opacity: 0.8;
 }
 
-#bucket{
-    width: 170px;
-    height: 170px;
+#bucket {
+    width: 120px;
+    height: 120px;
     position: absolute;
     bottom: 0;
-    left: 42%;
+	left: 42%;
+	animation: bucket .8s linear;
 }
 
-.brick{
+@keyframes bucket {
+	0%{
+		left: -100%;
+    }
+    50%{
+		left: 0%;
+    }
+	100%{
+		left: 42%;
+    }
+}
+
+.brick {
     background: url('../img/1.png') no-repeat center;
     background-size: contain;
-    width: 100px;
-    height: 50px;
+    width: 90px;
+    height: 40px;
     position: absolute;
     top: -100px;
     left: 0;
@@ -47,7 +58,7 @@ body{
     animation: brickFirst .7s linear infinite;
 }
 
-@keyframes brickFirst{
+@keyframes brickFirst {
     0%{
         transform: rotate(0deg);
     }

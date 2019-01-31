@@ -3,13 +3,15 @@
 document.addEventListener('DOMContentLoaded', function () {
   var elBg = document.getElementById('bg');
   var elBucket = document.getElementById('bucket');
-  var elBricks = document.querySelectorAll('.brick');
+  var elBrick = document.querySelector('.brick');
   var rec = document.getElementById('record');
   var recNumber = 0;
   var brickSet = [];
   var startPos = -100;
-  var screenWidth = document.documentElement.offsetWidth - elBricks[0].offsetWidth;
-  var screenHeight = document.documentElement.offsetHeight + elBricks[0].offsetHeight;
+  var screenWidth = document.documentElement.offsetWidth;
+  var screenHeight = document.documentElement.offsetHeight;
+  var workWidth = screenWidth - elBrick.offsetWidth;
+  var workHeight = screenHeight + elBrick.offsetHeight;
 
   // Move Bucket
   function moveBucket() {
@@ -52,6 +54,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   moveBucket();
 
+  // Randomizer
+  function mtRand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
   // Animate
   function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
     var start = performance.now();
@@ -83,31 +90,46 @@ document.addEventListener('DOMContentLoaded', function () {
   var anLinear = makeLinear(linear);
 
   //Fall Bricks
-  window.onload = function () {var _loop = function _loop(
-    i) {
-      var fall = function fall() {
-        elBricks[i].style.left = mtRand(0, screenWidth) + 'px';
+  elBucket.addEventListener('animationend', function () {
+    function fall() {
+      var elBricks = document.querySelectorAll('.brick');
+      var lengthBricks = elBricks.length;var _loop = function _loop(
+
+      i) {
+        var thisBrick = elBricks[i];
+        thisBrick.style.left = mtRand(0, workWidth) + 'px';
         animate({
           duration: mtRand(2500, 9000),
           timing: anLinear,
           draw: function draw(progress) {
-            elBricks[i].style.top = progress * screenHeight + 'px';
+            thisBrick.style.top = progress * workHeight + 'px';
 
-            if (parseInt(elBricks[i].style.top) >= screenHeight) {
-              elBricks[i].style.top = startPos + 'px';
+            if (parseInt(thisBrick.style.top) >= workHeight) {
+
+              if (lengthBricks <= 3) {
+                // cloneBrick();
+              }
+
+              brickTop.call(thisBrick);
               fall();
             }
-          } });
+          } });};for (var i = 0; i < elBricks.length; i++) {_loop(i);
 
-      };
-      fall();};for (var i = 0; i < elBricks.length; i++) {_loop(i);
+      }
+    }
+    fall();
+
+    function brickTop() {
+      this.style.top = startPos + 'px';
     }
 
-  };
+    function cloneBrick() {
+      var newBrick = document.createElement('div');
+      newBrick.className = 'brick';
+      elBg.appendChild(newBrick);
+    }
 
-  // Randomizer
-  function mtRand(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
+  });
+
 
 });
