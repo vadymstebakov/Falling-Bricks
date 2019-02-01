@@ -89,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
 	let anLinear = makeLinear(linear);
 
+	elBrick.style.left = mtRand(0, workWidth) + 'px';
+
 	//Fall Bricks
 	elBucket.addEventListener('animationend', function() {
 		function fall() {
@@ -97,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 			for (let i = 0; i < elBricks.length; i++) {
 				let thisBrick = elBricks[i];
-				thisBrick.style.left = mtRand(0, workWidth) + 'px';
 				animate({
 					duration: mtRand(2500, 9000),
 					timing: anLinear,
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		function brickTop() {
 			this.style.top = startPos + 'px';
+			this.style.left = mtRand(0, workWidth) + 'px';
 		}
 
 		function cloneBrick() {
