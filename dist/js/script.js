@@ -96,13 +96,8 @@ document.addEventListener('DOMContentLoaded', function () {
             thisBrick.style.top = progress * workHeight + 'px';
 
             if (parseInt(thisBrick.style.top) >= workHeight) {
-
-              if (lengthBricks <= 3) {
-                // cloneBrick();
-              }
-
               brickTop.call(thisBrick);
-              fall();
+              cloneBrick.call(lengthBricks);
             }
           } });};for (var i = 0; i < elBricks.length; i++) {_loop(i);
 
@@ -116,9 +111,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function cloneBrick() {
-      var newBrick = document.createElement('div');
-      newBrick.className = 'brick';
-      elBg.appendChild(newBrick);
+
+      if (this <= 2) {
+        console.log(this);
+        var newBrick = document.createElement('div');
+        newBrick.className = 'brick';
+        elBg.appendChild(newBrick);
+        fall();
+      }
     }
 
   });
