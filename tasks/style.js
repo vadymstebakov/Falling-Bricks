@@ -16,7 +16,7 @@ module.exports = function(options) {
 					};
 				})
 			}))
-			.pipe($.if(argv.dev, $.sourcemaps.init()))
+			// .pipe($.if(argv.dev, $.sourcemaps.init()))
 			.pipe($.cached('style'))
 			.pipe($.autoprefixer({
 				browsers: ['> 0.1%'],
@@ -28,7 +28,7 @@ module.exports = function(options) {
 			// .pipe($.rename({
 			//     suffix: '.min'
 			// }))
-			.pipe($.if(argv.dev, $.sourcemaps.write()))
+			// .pipe($.if(argv.dev, $.sourcemaps.write()))
 			.pipe(gulp.dest(options.dist));
 	};	
 };

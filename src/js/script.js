@@ -3,18 +3,23 @@
 document.addEventListener('DOMContentLoaded', function() {
 	let elBg = document.getElementById('bg');
 	let elBucket = document.getElementById('bucket');
-	let elBrick = document.querySelector('.brick');
+	let elBrick = elBg.querySelectorAll('.brick')[0];
+	let brickSet = [];
+	let i = 0;
 	let rec = document.getElementById('record');
 	let recNumber = 0;
-	let brickSet = [];
-	const startPos = -100;
 	let screenWidth = document.documentElement.offsetWidth;
 	let screenHeight = document.documentElement.offsetHeight;
 	let workWidth = screenWidth - elBrick.offsetWidth;
 	let workHeight = screenHeight + elBrick.offsetHeight;
+	const startPos = '-100px';
+	let removed = false;
 
 	elBucket.addEventListener('animationend', function() {
-		// Move Bucket
+		// Open score ---------------
+		rec.parentNode.classList.add('active');
+
+		// Move Bucket --------------
 		function moveBucket() {
 			elBucket.addEventListener('mousedown', function(e) {
 				let backetCoords = getCoords(elBucket);
@@ -55,12 +60,12 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		moveBucket();
 
-		// Randomizer
+		// Randomizer --------------
 		function mtRand(min, max) {
 			return Math.floor(Math.random() * (max - min + 1) + min);
 		} 
 
-		// Animate
+		// Animate --------------
 		function animate({timing, draw, duration}) {
 			let start = performance.now();
 			
@@ -78,50 +83,89 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 
-		elBrick.style.left = mtRand(0, workWidth) + 'px';
+		// Animate init -----------
+		function animateInt(briks) {
+			animate({
+				duration: mtRand(2500, 9000),
+				timing: function linear(timeFraction) {
+					return timeFraction;
+				},
+				draw: function(progress) {						
+					briks.style.top = progress * workHeight  + 'px';
+				}
+			});
+		}
 
-		//Fall Bricks
+		// Fall init --------------
+		let brickInterval = setInterval(function() { 
+			fall();
+		}, 3000);
+		
+		// Fall -------------
+		function brickFall(brick) {
+
+			animateInt(brick);
+
+			let falling = setInterval(function() {
+				if (checkCatch(brick)) {
+					// console.log('catch');
+					clearInterval(falling);
+					brick.parentNode.removeChild(brick);
+					recNumber++;
+					rec.innerHTML = recNumber;
+				}
+				if (checkFail(brick)) {
+					// console.log('fail');
+					clearInterval(falling);
+					brick.parentNode.removeChild(brick);
+				} 
+			}, 15);
+		}
+
+		// Catch ----------------
+		function checkCatch(brick) {
+			let elBrickX = brick.getBoundingClientRect().left;
+			let elBrickY = brick.getBoundingClientRect().top;
+			let elBucketX = elBucket.getBoundingClientRect().left;
+			let elBucketY = elBucket.getBoundingClientRect().top;			
+
+			return (elBrickY > elBucketY && elBrickX > elBucketX && elBrickX < elBucketX + parseInt(elBucket.width));
+		}
+
+		// Fail --------------
+		function checkFail(brick) {			
+			return (parseInt(brick.style.top) >= screenHeight);
+		}
+
+		// Brick clone --------------
 		function fall() {
-			let elBricks = document.querySelectorAll('.brick');
-			let lengthBricks = elBricks.length;
+			brickSet[i] = elBrick.cloneNode();
+			brickSet[i].style.left = mtRand(0, workWidth) + 'px';
+			elBg.appendChild(brickSet[i]);
+			brickFall(brickSet[i]);
+			i++;
 
-			for (let i = 0; i < elBricks.length; i++) {
-				let thisBrick = elBricks[i];
-				animate({
-					duration: mtRand(2500, 9000),
-					timing: function linear(timeFraction) {
-						return timeFraction;
-					},
-					draw: function(progress) {
-						thisBrick.style.top = progress * workHeight  + 'px';
-						
-						if (parseInt(thisBrick.style.top) >= workHeight) {
-							brickTop.call(thisBrick);
-							cloneBrick.call(lengthBricks);		
-						}
-					}
-				});
+			if (!removed) {
+				elBrick.parentNode.removeChild(elBrick);
+				removed = true;
 			}
 		}
-		fall();
 
-		function brickTop() {
-			this.style.top = startPos + 'px';
-			this.style.left = mtRand(0, workWidth) + 'px';
-		}
+		// Pause --------------------
+		window.onblur = function() {
+			console.log('pause');
+		};
 
-		function cloneBrick() {
-						
-			if (this <= 2) {
-				console.log(this);
-				let newBrick = document.createElement('div');
-				newBrick.className = 'brick';
-				elBg.appendChild(newBrick);
-				fall();
+		// Continue -----------------
+		window.onfocus = function() {
+			for (let i = 0; i < brickSet.length; i++) {
+				let brick = brickSet[i];
+				let style = getComputedStyle(brick);
+				
+				if (style.top == startPos) brick.parentNode.removeChild(brick);
 			}
-		}
+		};
 			
 	});
-
 	
 });

@@ -3,18 +3,23 @@
 document.addEventListener('DOMContentLoaded', function () {
   var elBg = document.getElementById('bg');
   var elBucket = document.getElementById('bucket');
-  var elBrick = document.querySelector('.brick');
+  var elBrick = elBg.querySelectorAll('.brick')[0];
+  var brickSet = [];
+  var i = 0;
   var rec = document.getElementById('record');
   var recNumber = 0;
-  var brickSet = [];
-  var startPos = -100;
   var screenWidth = document.documentElement.offsetWidth;
   var screenHeight = document.documentElement.offsetHeight;
   var workWidth = screenWidth - elBrick.offsetWidth;
   var workHeight = screenHeight + elBrick.offsetHeight;
+  var startPos = '-100px';
+  var removed = false;
 
   elBucket.addEventListener('animationend', function () {
-    // Move Bucket
+    // Open score ---------------
+    rec.parentNode.classList.add('active');
+
+    // Move Bucket --------------
     function moveBucket() {
       elBucket.addEventListener('mousedown', function (e) {
         var backetCoords = getCoords(elBucket);
@@ -55,12 +60,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     moveBucket();
 
-    // Randomizer
+    // Randomizer --------------
     function mtRand(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
-    // Animate
+    // Animate --------------
     function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
       var start = performance.now();
 
@@ -78,50 +83,89 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    elBrick.style.left = mtRand(0, workWidth) + 'px';
+    // Animate init -----------
+    function animateInt(briks) {
+      animate({
+        duration: mtRand(2500, 9000),
+        timing: function linear(timeFraction) {
+          return timeFraction;
+        },
+        draw: function draw(progress) {
+          briks.style.top = progress * workHeight + 'px';
+        } });
 
-    //Fall Bricks
+    }
+
+    // Fall init --------------
+    var brickInterval = setInterval(function () {
+      fall();
+    }, 3000);
+
+    // Fall -------------
+    function brickFall(brick) {
+
+      animateInt(brick);
+
+      var falling = setInterval(function () {
+        if (checkCatch(brick)) {
+          // console.log('catch');
+          clearInterval(falling);
+          brick.parentNode.removeChild(brick);
+          recNumber++;
+          rec.innerHTML = recNumber;
+        }
+        if (checkFail(brick)) {
+          // console.log('fail');
+          clearInterval(falling);
+          brick.parentNode.removeChild(brick);
+        }
+      }, 15);
+    }
+
+    // Catch ----------------
+    function checkCatch(brick) {
+      var elBrickX = brick.getBoundingClientRect().left;
+      var elBrickY = brick.getBoundingClientRect().top;
+      var elBucketX = elBucket.getBoundingClientRect().left;
+      var elBucketY = elBucket.getBoundingClientRect().top;
+
+      return elBrickY > elBucketY && elBrickX > elBucketX && elBrickX < elBucketX + parseInt(elBucket.width);
+    }
+
+    // Fail --------------
+    function checkFail(brick) {
+      return parseInt(brick.style.top) >= screenHeight;
+    }
+
+    // Brick clone --------------
     function fall() {
-      var elBricks = document.querySelectorAll('.brick');
-      var lengthBricks = elBricks.length;var _loop = function _loop(
+      brickSet[i] = elBrick.cloneNode();
+      brickSet[i].style.left = mtRand(0, workWidth) + 'px';
+      elBg.appendChild(brickSet[i]);
+      brickFall(brickSet[i]);
+      i++;
 
-      i) {
-        var thisBrick = elBricks[i];
-        animate({
-          duration: mtRand(2500, 9000),
-          timing: function linear(timeFraction) {
-            return timeFraction;
-          },
-          draw: function draw(progress) {
-            thisBrick.style.top = progress * workHeight + 'px';
-
-            if (parseInt(thisBrick.style.top) >= workHeight) {
-              brickTop.call(thisBrick);
-              cloneBrick.call(lengthBricks);
-            }
-          } });};for (var i = 0; i < elBricks.length; i++) {_loop(i);
-
+      if (!removed) {
+        elBrick.parentNode.removeChild(elBrick);
+        removed = true;
       }
     }
-    fall();
 
-    function brickTop() {
-      this.style.top = startPos + 'px';
-      this.style.left = mtRand(0, workWidth) + 'px';
-    }
+    // Pause --------------------
+    window.onblur = function () {
+      console.log('pause');
+    };
 
-    function cloneBrick() {
+    // Continue -----------------
+    window.onfocus = function () {
+      for (var _i = 0; _i < brickSet.length; _i++) {
+        var brick = brickSet[_i];
+        var style = getComputedStyle(brick);
 
-      if (this <= 2) {
-        console.log(this);
-        var newBrick = document.createElement('div');
-        newBrick.className = 'brick';
-        elBg.appendChild(newBrick);
-        fall();
+        if (style.top == startPos) brick.parentNode.removeChild(brick);
       }
-    }
+    };
 
   });
-
 
 });

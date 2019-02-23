@@ -1,3 +1,15 @@
+@font-face {
+    font-family: 'headliner';
+    src: url('../fonts/headliner/headliner_.eot');
+    src: url('../fonts/headliner/headliner_.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/headliner/headliner_.woff2') format('woff2'),
+         url('../fonts/headliner/headliner_.woff') format('woff'),
+         url('../fonts/headliner/headliner_.ttf') format('truetype'),
+         url('../fonts/headliner/headliner_.svg#headliner_no._45rus_by_lyajRg') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html, body {
     height: 100%;
 }
@@ -22,9 +34,16 @@ body {
 	-webkit-transform: translate(-50%, -50%);
 	-ms-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-    font-size: 40px;
-    font-weight: 700;
-	opacity: 0.8;
+    font-size: 100px;
+	opacity: 0;
+	color: #2d3436;
+	-webkit-transition: all .5s ease;
+	transition: all .5s ease;
+	font-family: 'headliner', sans-serif;
+}
+
+.score.active {
+	opacity: 1;
 }
 
 #bucket {

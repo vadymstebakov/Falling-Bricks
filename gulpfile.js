@@ -75,7 +75,7 @@ lazyRequireTask('svg-sprite', './tasks/svg-sprite.js', {
 
 // Clear dir
 lazyRequireTask('clean', './tasks/clean.js', {
-	src: 'dist'
+	src: 'dist/'
 });
 
 // Browser-Sync
@@ -106,6 +106,3 @@ gulp.task('default', gulp.series('build', gulp.parallel(
 	'watch',
 	'browser-sync'
 )));
-
-// gulp --dev (with sourcemaps)
-// gulp (without sourcemaps)
