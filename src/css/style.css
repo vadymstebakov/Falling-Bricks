@@ -26,6 +26,46 @@ body {
     background-size: cover;
 }
 
+.attempts-wrap {
+	display: flex;
+	align-items: center;
+	padding: 20px;
+}
+
+.heart {
+	display: block;
+	position: relative;
+	width: 60px;
+    height: 50px;
+}
+
+.heart:before,
+.heart:after {
+	content: "";
+	position: absolute;
+	left: 30px;
+    top: 0;
+    width: 30px;
+    height: 48px;
+	background: #ff3838;
+	border-radius: 50px 50px 0 0;
+	transform: rotate(-45deg);
+	transform-origin: 0 100%;
+}
+
+.heart:after {
+	left: 0;
+	transform: rotate(45deg);
+	transform-origin: 100% 100%;
+}
+
+.attempts {
+	margin-left: 20px;
+	font-family: 'headliner', sans-serif;
+	font-size: 40px;
+	color: #ff3838;
+}
+
 .score {
     text-align: center;
     position: absolute;

@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var brickSet = [];
   var i = 0;
   var rec = document.getElementById('record');
-  var recNumber = 0;
+  var recSum = 0;
+  var life = elBg.querySelector('.attempts');
+  var lifeSum = 3;
   var screenWidth = document.documentElement.offsetWidth;
   var screenHeight = document.documentElement.offsetHeight;
   var workWidth = screenWidth - elBrick.offsetWidth;
@@ -111,13 +113,25 @@ document.addEventListener('DOMContentLoaded', function () {
           // console.log('catch');
           clearInterval(falling);
           brick.parentNode.removeChild(brick);
-          recNumber++;
-          rec.innerHTML = recNumber;
+          recSum++;
+          rec.innerHTML = recSum;
+
+          if (recSum % 10 == 0) {
+            lifeSum++;
+            life.innerHTML = lifeSum;
+          }
         }
         if (checkFail(brick)) {
           // console.log('fail');
           clearInterval(falling);
           brick.parentNode.removeChild(brick);
+          lifeSum--;
+          life.innerHTML = lifeSum;
+
+          if (lifeSum <= 0) {
+            lifeSum = 0;
+            life.innerHTML = lifeSum;
+          }
         }
       }, 15);
     }
