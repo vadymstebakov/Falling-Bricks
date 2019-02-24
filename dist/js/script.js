@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var recSum = 0;
   var life = elBg.querySelector('.attempts');
   var lifeSum = 3;
+  var wrapGameOver = elBg.querySelector('.end-wrap');
   var screenWidth = document.documentElement.offsetWidth;
   var screenHeight = document.documentElement.offsetHeight;
   var workWidth = screenWidth - elBrick.offsetWidth;
@@ -101,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fall init --------------
     var brickInterval = setInterval(function () {
       fall();
-    }, 3000);
+    }, 1000);
 
     // Fall -------------
     function brickFall(brick) {
@@ -121,18 +122,26 @@ document.addEventListener('DOMContentLoaded', function () {
             life.innerHTML = lifeSum;
           }
         }
+
         if (checkFail(brick)) {
           // console.log('fail');
           clearInterval(falling);
-          brick.parentNode.removeChild(brick);
+          brick.remove();
           lifeSum--;
           life.innerHTML = lifeSum;
 
           if (lifeSum <= 0) {
             lifeSum = 0;
             life.innerHTML = lifeSum;
+            gameOver();
           }
         }
+
+        if (wrapGameOver.classList.contains('active')) {
+          clearInterval(falling);
+          return brick.remove();
+        }
+
       }, 15);
     }
 
@@ -165,6 +174,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // Game Over --------------
+    function gameOver() {
+      clearInterval(brickInterval);
+      wrapGameOver.classList.add('active');
+    }
+
     // Pause --------------------
     window.onblur = function () {
       console.log('pause');
@@ -176,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var brick = brickSet[_i];
         var style = getComputedStyle(brick);
 
-        if (style.top == startPos) brick.parentNode.removeChild(brick);
+        if (style.top == startPos) brick.remove();
       }
     };
 

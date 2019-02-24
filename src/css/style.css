@@ -26,6 +26,10 @@ body {
     background-size: cover;
 }
 
+#bg:hover .brick {
+	will-change: transform;
+}
+
 .attempts-wrap {
 	display: flex;
 	align-items: center;
@@ -105,7 +109,7 @@ body {
 }
 
 .brick {
-    background: url('../img/1.png') no-repeat center;
+    background: url('../img/brick.png') no-repeat center;
     background-size: contain;
     width: 90px;
     height: 40px;
@@ -144,4 +148,30 @@ body {
     100%{
         transform: rotate(360deg);
     }
+}
+
+.end-wrap {
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 5;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, .9);
+	font-family: 'headliner', sans-serif;
+	transform: translateY(-100%);
+	transition: all .4s ease;
+}
+
+.end-wrap.active {
+	transform: translateY(0%);
+}
+
+.end-inner {
+	font-size: 100px;
+	color: #ff3838;
+	text-align: center;
 }
