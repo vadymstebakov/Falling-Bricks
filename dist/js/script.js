@@ -5,21 +5,65 @@ document.addEventListener('DOMContentLoaded', function () {
   var elBucket = document.getElementById('bucket');
   var elBrick = elBg.querySelectorAll('.brick')[0];
   var brickSet = [];
+  var widthBuket = elBucket.offsetWidth;
+  var minFromHeightBuket = 75;
+  var widthBrick = elBrick.offsetWidth;
+  var heightBrick = elBrick.offsetHeight;
   var i = 0;
   var rec = document.getElementById('record');
   var recSum = 0;
+  var btnPause = elBg.querySelector('.btn');
   var life = elBg.querySelector('.attempts');
   var lifeSum = 3;
-  var wrapGameOver = elBg.querySelector('.end-wrap');
+  var wrapPause = elBg.querySelector('.popup_pause');
+  var wrapGameOver = elBg.querySelector('.popup_end');
   var screenWidth = document.documentElement.offsetWidth;
   var screenHeight = document.documentElement.offsetHeight;
-  var workWidth = screenWidth - elBrick.offsetWidth;
-  var workHeight = screenHeight + elBrick.offsetHeight;
+  var workWidth = screenWidth - widthBrick;
+  var workHeight = screenHeight + heightBrick;
   var startPos = '-100px';
   var removed = false;
 
+  function initPopups() {
+    var popups = elBg.querySelectorAll('.popup');
+    var btnShow = elBg.querySelectorAll('.show-popup');
+    var btnClose = elBg.querySelectorAll('.close-popup');
+
+    var popupRemove = function popupRemove() {
+      for (var _i = 0; _i < popups.length; _i++) {
+        popups[_i].classList.remove('active');
+      }
+    };
+
+    var showPopup = function showPopup() {
+      for (var _i2 = 0; _i2 < btnShow.length; _i2++) {
+        btnShow[_i2].addEventListener('click', function (e) {
+          e.preventDefault();
+          popupRemove();
+          var popupClass = ".".concat(this.getAttribute('data-popup'));
+          elBg.querySelector(popupClass).classList.add('active');
+        }, false);
+      }
+      closePopup();
+    };
+
+    var closePopup = function closePopup() {
+      for (var _i3 = 0; _i3 < btnClose.length; _i3++) {
+        btnClose[_i3].addEventListener('click', function (e) {
+          e.preventDefault();
+          popupRemove();
+        }, false);
+      }
+    };
+
+    showPopup();
+  }
+  initPopups();
+
   elBucket.addEventListener('animationend', function () {
-    // Open score ---------------
+    // Start Game ----------------
+    life.parentNode.classList.add('active');
+    btnPause.classList.add('active');
     rec.parentNode.classList.add('active');
 
     // Move Bucket --------------
@@ -31,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.onmousemove = function (e) {
           var newLeft = e.pageX - shiftX - bgCoords.left;
-          var rightEdge = elBg.offsetWidth - elBucket.offsetWidth;
+          var rightEdge = elBg.offsetWidth - widthBuket;
 
           if (newLeft < 0) {
             newLeft = 0;
@@ -86,15 +130,15 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    // Animate init -----------
-    function animateInt(briks) {
+    // Animate fall init -----------
+    function animateFallInt(bricks) {
       animate({
         duration: mtRand(2500, 9000),
         timing: function linear(timeFraction) {
           return timeFraction;
         },
         draw: function draw(progress) {
-          briks.style.top = progress * workHeight + 'px';
+          bricks.style.top = progress * workHeight + 'px';
         } });
 
     }
@@ -102,12 +146,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fall init --------------
     var brickInterval = setInterval(function () {
       fall();
-    }, 1000);
+    }, 3000);
 
     // Fall -------------
     function brickFall(brick) {
-
-      animateInt(brick);
+      animateFallInt(brick);
 
       var falling = setInterval(function () {
         if (checkCatch(brick)) {
@@ -147,12 +190,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Catch ----------------
     function checkCatch(brick) {
-      var elBrickX = brick.getBoundingClientRect().left;
-      var elBrickY = brick.getBoundingClientRect().top;
-      var elBucketX = elBucket.getBoundingClientRect().left;
-      var elBucketY = elBucket.getBoundingClientRect().top;
-
-      return elBrickY > elBucketY && elBrickX > elBucketX && elBrickX < elBucketX + parseInt(elBucket.width);
+      var elBrickL = Math.floor(brick.getBoundingClientRect().left);
+      var elBrickR = Math.floor(brick.getBoundingClientRect().right);
+      var elBrickT = Math.floor(brick.getBoundingClientRect().top);
+      var elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
+      var elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
+      var elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
+      var elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+      return (
+        elBrickT > elBucketT &&
+        elBucketB - minFromHeightBuket > elBrickT &&
+        elBrickL > elBucketL &&
+        elBrickR < elBucketR);
     }
 
     // Fail --------------
@@ -180,19 +229,34 @@ document.addEventListener('DOMContentLoaded', function () {
       wrapGameOver.classList.add('active');
     }
 
-    // Pause --------------------
-    window.onblur = function () {
-      console.log('pause');
-    };
+    // Pause ------------------
+    function addPause() {
+      for (var _i4 = 0; _i4 < brickSet.length; _i4++) {
+        var brick = brickSet[_i4];
+        brick.classList.add('stop');
+      }
 
-    // Continue -----------------
-    window.onfocus = function () {
-      for (var _i = 0; _i < brickSet.length; _i++) {
-        var brick = brickSet[_i];
+      wrapPause.classList.add('active');
+    }
+
+    function removePause() {
+      for (var _i5 = 0; _i5 < brickSet.length; _i5++) {
+        var brick = brickSet[_i5];
         var style = getComputedStyle(brick);
-
         if (style.top == startPos) brick.remove();
       }
+    }
+
+    // Pause blur --------------------
+    window.onblur = function () {
+      console.log('pause');
+      addPause();
+    };
+
+    // Continue focus -----------------
+    window.onfocus = function () {
+      console.log('play');
+      removePause();
     };
 
   });

@@ -5,21 +5,65 @@ document.addEventListener('DOMContentLoaded', function() {
 	let elBucket = document.getElementById('bucket');
 	let elBrick = elBg.querySelectorAll('.brick')[0];
 	let brickSet = [];
+	const widthBuket = elBucket.offsetWidth;
+	const minFromHeightBuket = 75;
+	const widthBrick = elBrick.offsetWidth;
+	const heightBrick = elBrick.offsetHeight;
 	let i = 0;
 	let rec = document.getElementById('record');
 	let recSum = 0;
+	let btnPause = elBg.querySelector('.btn');
 	let life = elBg.querySelector('.attempts');
 	let lifeSum = 3;
-	let wrapGameOver = elBg.querySelector('.end-wrap'); 
+	let wrapPause = elBg.querySelector('.popup_pause'); 
+	let wrapGameOver = elBg.querySelector('.popup_end'); 
 	let screenWidth = document.documentElement.offsetWidth;
 	let screenHeight = document.documentElement.offsetHeight;
-	let workWidth = screenWidth - elBrick.offsetWidth;
-	let workHeight = screenHeight + elBrick.offsetHeight;
+	let workWidth = screenWidth - widthBrick;
+	let workHeight = screenHeight + heightBrick;
 	const startPos = '-100px';
 	let removed = false;
 
+	function initPopups() {
+		let popups = elBg.querySelectorAll('.popup');
+		let btnShow = elBg.querySelectorAll('.show-popup');
+		let btnClose = elBg.querySelectorAll('.close-popup');
+
+		let popupRemove = function() {
+			for (let i = 0; i < popups.length; i++) {
+				popups[i].classList.remove('active');
+			}
+		};
+
+		let showPopup = function() {
+			for (let i = 0; i < btnShow.length; i++) {
+				btnShow[i].addEventListener('click', function(e) {
+					e.preventDefault();
+					popupRemove();
+					let popupClass = `.${this.getAttribute('data-popup')}`;
+					elBg.querySelector(popupClass).classList.add('active');
+				}, false);
+			}
+			closePopup();
+		};
+
+		let closePopup = function() {
+			for (let i = 0; i < btnClose.length; i++) {
+				btnClose[i].addEventListener('click', function(e) {
+					e.preventDefault();
+					popupRemove();
+				}, false);
+			}
+		};
+
+		showPopup();
+	}
+	initPopups();
+
 	elBucket.addEventListener('animationend', function() {
-		// Open score ---------------
+		// Start Game ----------------
+		life.parentNode.classList.add('active');
+		btnPause.classList.add('active');
 		rec.parentNode.classList.add('active');
 
 		// Move Bucket --------------
@@ -31,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				
 				document.onmousemove = function(e) {
 					let newLeft = e.pageX - shiftX - bgCoords.left;
-					let rightEdge = elBg.offsetWidth - elBucket.offsetWidth;
+					let rightEdge = elBg.offsetWidth - widthBuket;
 			
 					if (newLeft < 0) {
 						newLeft = 0;
@@ -85,16 +129,16 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			});
 		}
-
-		// Animate init -----------
-		function animateInt(briks) {
+		
+		// Animate fall init -----------
+		function animateFallInt(bricks) {
 			animate({
 				duration: mtRand(2500, 9000),
 				timing: function linear(timeFraction) {
 					return timeFraction;
 				},
-				draw: function(progress) {						
-					briks.style.top = progress * workHeight  + 'px';
+				draw: function(progress) {					
+					bricks.style.top = progress * workHeight  + 'px';
 				}
 			});
 		}
@@ -102,12 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Fall init --------------
 		let brickInterval = setInterval(function() { 
 			fall();
-		}, 1000);
+		}, 3000);
 		
 		// Fall -------------
 		function brickFall(brick) {
-
-			animateInt(brick);
+			animateFallInt(brick);
 
 			let falling = setInterval(function() {
 				if (checkCatch(brick)) {
@@ -147,12 +190,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Catch ----------------
 		function checkCatch(brick) {
-			let elBrickX = brick.getBoundingClientRect().left;
-			let elBrickY = brick.getBoundingClientRect().top;
-			let elBucketX = elBucket.getBoundingClientRect().left;
-			let elBucketY = elBucket.getBoundingClientRect().top;			
-
-			return (elBrickY > elBucketY && elBrickX > elBucketX && elBrickX < elBucketX + parseInt(elBucket.width));
+			let elBrickL = Math.floor(brick.getBoundingClientRect().left);
+			let elBrickR = Math.floor(brick.getBoundingClientRect().right);
+			let elBrickT = Math.floor(brick.getBoundingClientRect().top);
+			let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
+			let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
+			let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
+			let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);	
+			return (
+				elBrickT > elBucketT &&
+				(elBucketB - minFromHeightBuket) > elBrickT &&
+				elBrickL > elBucketL && 
+				elBrickR < elBucketR);
 		}
 
 		// Fail --------------
@@ -171,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (!removed) {
 				elBrick.parentNode.removeChild(elBrick);
 				removed = true;
-			}
+			}	
 		}
 
 		// Game Over --------------
@@ -180,19 +229,34 @@ document.addEventListener('DOMContentLoaded', function() {
 			wrapGameOver.classList.add('active');
 		}
 
-		// Pause --------------------
-		window.onblur = function() {
-			console.log('pause');
-		};
+		// Pause ------------------
+		function addPause() {
+			for (let i = 0; i < brickSet.length; i++) {
+				let brick = brickSet[i];
+				brick.classList.add('stop');
+			}
+			
+			wrapPause.classList.add('active');
+		}
 
-		// Continue -----------------
-		window.onfocus = function() {
+		function removePause() {
 			for (let i = 0; i < brickSet.length; i++) {
 				let brick = brickSet[i];
 				let style = getComputedStyle(brick);
-				
 				if (style.top == startPos) brick.remove();
 			}
+		}
+
+		// Pause blur --------------------
+		window.onblur = function() {
+			console.log('pause');
+			addPause();
+		};
+
+		// Continue focus -----------------
+		window.onfocus = function() {
+			console.log('play');
+			removePause();
 		};
 			
 	});

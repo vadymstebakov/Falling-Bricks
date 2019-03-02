@@ -12,7 +12,7 @@ const path = {
 	},
 	src: {
 		html: 'src/*.html',
-		style: 'src/css/**/*.css',
+		style: 'src/scss/**/*.scss',
 		js: 'src/js/**/*.js',
 		img: 'src/img/**/*',
 		fonts: 'src/fonts/**/*',
@@ -20,7 +20,7 @@ const path = {
 	},
 	watch: {
 		html: 'src/*.html',
-		style: 'src/css/**/*.css',
+		style: 'src/scss/**/*.scss',
 		js: 'src/js/**/*.js',
 		img: 'src/img/**/*',
 		fonts: 'src/fonts/**/*'

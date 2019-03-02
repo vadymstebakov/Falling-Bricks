@@ -2,19 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Game</title>
+    <title>bucketCatch</title>
 	<link rel="stylesheet" href="css/style.css">
 	<script src="js/polyfill.js" defer></script>
     <script src="js/script.js" defer></script>   
 </head>
 <body>
     <div id="bg">
-		<div class="end-wrap">
-			<div class="end-inner">Game over</div>
+		<div class="options">
+			<div class="attempts-wrap">
+				<span class="heart"></span>
+				<span class="attempts">3</span>
+			</div>
+			<a href="#" class="btn show-popup" data-popup="popup_pause">
+				<span>Pause</span>
+			</a>	
 		</div>
-		<div class="attempts-wrap">
-			<span class="heart"></span>
-			<span class="attempts">3</span>
+		<div class="popup popup_pause">
+			<ul class="popup__wrap">
+				<li class="popup__item">
+					<a href="#" class="close-popup">Continue</a>
+				</li>
+				<li class="popup__item">
+					<a href="index.html">Exit</a>
+				</li>
+			</ul>
+		</div>
+		<div class="popup popup_end">
+			<div class="popup__end-inner">Game over</div>
+			<ul class="popup__wrap">
+				<li class="popup__item">
+					<a href="#" class="close-popup">Restart</a>
+				</li>
+				<li class="popup__item">
+					<a href="index.html">Exit</a>
+				</li>
+			</ul>
 		</div>
         <div class="score">Score: <span id="record">0</span></div>
         <img src="img/Vedro.png" alt="" id="bucket">
