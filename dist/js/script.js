@@ -1,22 +1,22 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function () {
-  var elBg = document.getElementById('bg');
-  var elBucket = document.getElementById('bucket');
-  var elBrick = elBg.querySelectorAll('.brick')[0];
+  var popupStart = document.getElementById('popup-start');
+  var btnStart = popupStart.querySelector('.start-game');
+  var sectionGame = document.getElementById('game');
+  var elBucket = sectionGame.querySelector('.bucket');
+  var elBrick = sectionGame.querySelectorAll('.brick')[0];
   var brickSet = [];
   var widthBuket = elBucket.offsetWidth;
   var minFromHeightBuket = 75;
   var widthBrick = elBrick.offsetWidth;
   var heightBrick = elBrick.offsetHeight;
   var i = 0;
-  var rec = document.getElementById('record');
+  var rec = sectionGame.querySelector('.record');
   var recSum = 0;
-  var btnPause = elBg.querySelector('.btn');
-  var life = elBg.querySelector('.attempts');
+  var life = document.querySelector('.attempts');
   var lifeSum = 3;
-  var wrapPause = elBg.querySelector('.popup_pause');
-  var wrapGameOver = elBg.querySelector('.popup_end');
+  var wrapGameOver = document.querySelector('.popup--end');
   var screenWidth = document.documentElement.offsetWidth;
   var screenHeight = document.documentElement.offsetHeight;
   var workWidth = screenWidth - widthBrick;
@@ -24,10 +24,36 @@ document.addEventListener('DOMContentLoaded', function () {
   var startPos = '-100px';
   var removed = false;
 
-  function initPopups() {
-    var popups = elBg.querySelectorAll('.popup');
-    var btnShow = elBg.querySelectorAll('.show-popup');
-    var btnClose = elBg.querySelectorAll('.close-popup');
+  // Save name
+  (function saveName() {
+    var form = popupStart.querySelector('.user-name');
+    var btn = form.querySelector('.btn');
+
+    popupStart.classList.add('active');
+
+    if (localStorage.getItem('userName')) {
+      popupStart.classList.remove('popup--first-start');
+      return form.remove();
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var self = this;
+      var inputVal = self.previousElementSibling.value;
+
+      if (inputVal !== '') {
+        localStorage.setItem('userName', inputVal);
+        popupStart.classList.remove('popup--first-start');
+        form.remove();
+      }
+    }, false);
+  })();
+
+  // Init popups--------------
+  (function initPopups() {
+    var popups = document.querySelectorAll('.popup');
+    var btnShow = document.querySelectorAll('.show-popup');
+    var btnClose = document.querySelectorAll('.close-popup');
 
     var popupRemove = function popupRemove() {
       for (var _i = 0; _i < popups.length; _i++) {
@@ -41,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
           e.preventDefault();
           popupRemove();
           var popupClass = ".".concat(this.getAttribute('data-popup'));
-          elBg.querySelector(popupClass).classList.add('active');
+          document.querySelector(popupClass).classList.add('active');
         }, false);
       }
       closePopup();
@@ -57,89 +83,81 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     showPopup();
+  })();
+
+  // Randomizer --------------
+  function mtRand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
-  initPopups();
 
-  elBucket.addEventListener('animationend', function () {
-    // Start Game ----------------
-    life.parentNode.classList.add('active');
-    btnPause.classList.add('active');
-    rec.parentNode.classList.add('active');
+  // Animate --------------
+  function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
+    var start = performance.now();
 
-    // Move Bucket --------------
-    function moveBucket() {
-      elBucket.addEventListener('mousedown', function (e) {
-        var backetCoords = getCoords(elBucket);
-        var shiftX = e.pageX - backetCoords.left;
-        var bgCoords = getCoords(elBg);
+    requestAnimationFrame(function animate(time) {
+      var timeFraction = (time - start) / duration;
+      if (timeFraction > 1) timeFraction = 1;
 
-        document.onmousemove = function (e) {
-          var newLeft = e.pageX - shiftX - bgCoords.left;
-          var rightEdge = elBg.offsetWidth - widthBuket;
+      var progress = timing(timeFraction);
 
-          if (newLeft < 0) {
-            newLeft = 0;
-          }
-          if (newLeft > rightEdge) {
-            newLeft = rightEdge;
-          }
-          elBucket.style.left = newLeft + 'px';
-        };
+      draw(progress);
 
-        document.onmouseup = function () {
-          document.onmousemove = document.onmouseup = null;
-        };
-        return false;
-      });
+      if (timeFraction < 1) {
+        requestAnimationFrame(animate);
+      }
+    });
+  }
 
-      elBucket.ondragstart = function () {
-        return false;
+  // Move Bucket --------------
+  (function moveBucket() {
+    elBucket.addEventListener('mousedown', function (e) {
+      var backetCoords = getCoords(elBucket);
+      var shiftX = e.pageX - backetCoords.left;
+      var bgCoords = getCoords(sectionGame);
+
+      document.onmousemove = function (e) {
+        var newLeft = e.pageX - shiftX - bgCoords.left;
+        var rightEdge = sectionGame.offsetWidth - widthBuket;
+
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > rightEdge) newLeft = rightEdge;
+        elBucket.style.left = newLeft + 'px';
       };
 
-      function getCoords(elem) {
-        var box = elem.getBoundingClientRect();
+      document.onmouseup = function () {
+        document.onmousemove = document.onmouseup = null;
+      };
+      return false;
+    });
 
-        return {
-          top: box.top + pageYOffset,
-          left: box.left + pageXOffset };
+    elBucket.ondragstart = function () {
+      return false;
+    };
 
-      }
+    function getCoords(elem) {
+      var box = elem.getBoundingClientRect();
+
+      return {
+        top: box.top + pageYOffset,
+        left: box.left + pageXOffset };
+
     }
-    moveBucket();
+  })();
 
-    // Randomizer --------------
-    function mtRand(min, max) {
-      return Math.floor(Math.random() * (max - min + 1) + min);
-    }
-
-    // Animate --------------
-    function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
-      var start = performance.now();
-
-      requestAnimationFrame(function animate(time) {
-        var timeFraction = (time - start) / duration;
-        if (timeFraction > 1) timeFraction = 1;
-
-        var progress = timing(timeFraction);
-
-        draw(progress);
-
-        if (timeFraction < 1) {
-          requestAnimationFrame(animate);
-        }
-      });
-    }
+  // Start Game ----------------
+  btnStart.addEventListener('click', function () {
+    sectionGame.classList.add('active');
+    life.parentNode.classList.add('active');
+    rec.parentNode.classList.add('active');
 
     // Animate fall init -----------
-    function animateFallInt(bricks) {
+    function initAnimateFall(bricks) {
       animate({
-        duration: mtRand(2500, 9000),
-        timing: function linear(timeFraction) {
-          return timeFraction;
-        },
+        timing: function timing(timeFraction) {return timeFraction;},
         draw: function draw(progress) {
-          bricks.style.top = progress * workHeight + 'px';
-        } });
+          bricks.style.top = "".concat(progress * workHeight, "px");
+        },
+        duration: mtRand(2500, 9000) });
 
     }
 
@@ -150,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Fall -------------
     function brickFall(brick) {
-      animateFallInt(brick);
+      initAnimateFall(brick);
 
       var falling = setInterval(function () {
         if (checkCatch(brick)) {
@@ -158,11 +176,11 @@ document.addEventListener('DOMContentLoaded', function () {
           clearInterval(falling);
           brick.parentNode.removeChild(brick);
           recSum++;
-          rec.innerHTML = recSum;
+          rec.textContent = recSum;
 
           if (recSum % 10 == 0) {
             lifeSum++;
-            life.innerHTML = lifeSum;
+            life.textContent = lifeSum;
           }
         }
 
@@ -171,11 +189,11 @@ document.addEventListener('DOMContentLoaded', function () {
           clearInterval(falling);
           brick.remove();
           lifeSum--;
-          life.innerHTML = lifeSum;
+          life.textContent = lifeSum;
 
           if (lifeSum <= 0) {
             lifeSum = 0;
-            life.innerHTML = lifeSum;
+            life.textContent = lifeSum;
             gameOver();
           }
         }
@@ -197,11 +215,13 @@ document.addEventListener('DOMContentLoaded', function () {
       var elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
       var elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
       var elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+
       return (
         elBrickT > elBucketT &&
         elBucketB - minFromHeightBuket > elBrickT &&
         elBrickL > elBucketL &&
         elBrickR < elBucketR);
+
     }
 
     // Fail --------------
@@ -212,8 +232,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Brick clone --------------
     function fall() {
       brickSet[i] = elBrick.cloneNode();
-      brickSet[i].style.left = mtRand(0, workWidth) + 'px';
-      elBg.appendChild(brickSet[i]);
+      brickSet[i].style.left = "".concat(mtRand(0, workWidth), "px");
+      sectionGame.appendChild(brickSet[i]);
       brickFall(brickSet[i]);
       i++;
 
@@ -227,38 +247,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function gameOver() {
       clearInterval(brickInterval);
       wrapGameOver.classList.add('active');
+      sectionGame.classList.remove('active');
     }
 
-    // Pause ------------------
-    function addPause() {
-      for (var _i4 = 0; _i4 < brickSet.length; _i4++) {
-        var brick = brickSet[_i4];
-        brick.classList.add('stop');
-      }
-
-      wrapPause.classList.add('active');
-    }
-
-    function removePause() {
-      for (var _i5 = 0; _i5 < brickSet.length; _i5++) {
-        var brick = brickSet[_i5];
-        var style = getComputedStyle(brick);
-        if (style.top == startPos) brick.remove();
-      }
-    }
-
-    // Pause blur --------------------
-    window.onblur = function () {
-      console.log('pause');
-      addPause();
-    };
-
-    // Continue focus -----------------
-    window.onfocus = function () {
-      console.log('play');
-      removePause();
-    };
-
-  });
-
+  }, false);
 });

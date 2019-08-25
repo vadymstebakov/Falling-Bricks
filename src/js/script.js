@@ -1,22 +1,22 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', function() {
-	let elBg = document.getElementById('bg');
-	let elBucket = document.getElementById('bucket');
-	let elBrick = elBg.querySelectorAll('.brick')[0];
-	let brickSet = [];
+	const popupStart = document.getElementById('popup-start');
+	const btnStart = popupStart.querySelector('.start-game');
+	const sectionGame = document.getElementById('game');
+	let elBucket = sectionGame.querySelector('.bucket');
+	let elBrick = sectionGame.querySelectorAll('.brick')[0];
+	const brickSet = [];
 	const widthBuket = elBucket.offsetWidth;
 	const minFromHeightBuket = 75;
 	const widthBrick = elBrick.offsetWidth;
 	const heightBrick = elBrick.offsetHeight;
 	let i = 0;
-	let rec = document.getElementById('record');
+	let rec = sectionGame.querySelector('.record');
 	let recSum = 0;
-	let btnPause = elBg.querySelector('.btn');
-	let life = elBg.querySelector('.attempts');
+	let life = document.querySelector('.attempts');
 	let lifeSum = 3;
-	let wrapPause = elBg.querySelector('.popup_pause'); 
-	let wrapGameOver = elBg.querySelector('.popup_end'); 
+	let wrapGameOver = document.querySelector('.popup--end'); 
 	let screenWidth = document.documentElement.offsetWidth;
 	let screenHeight = document.documentElement.offsetHeight;
 	let workWidth = screenWidth - widthBrick;
@@ -24,10 +24,36 @@ document.addEventListener('DOMContentLoaded', function() {
 	const startPos = '-100px';
 	let removed = false;
 
-	function initPopups() {
-		let popups = elBg.querySelectorAll('.popup');
-		let btnShow = elBg.querySelectorAll('.show-popup');
-		let btnClose = elBg.querySelectorAll('.close-popup');
+	// Save name
+	(function saveName() {
+		const form = popupStart.querySelector('.user-name');
+		const btn = form.querySelector('.btn');
+
+		popupStart.classList.add('active');
+
+		if (localStorage.getItem('userName')) {
+			popupStart.classList.remove('popup--first-start');
+			return form.remove();
+		}
+
+		btn.addEventListener('click', function(e) {
+			e.preventDefault();
+			let self = this;
+			let inputVal = self.previousElementSibling.value;
+			
+			if (inputVal !== '') {
+				localStorage.setItem('userName', inputVal);
+				popupStart.classList.remove('popup--first-start');
+				form.remove();
+			}
+		}, false);
+	}) ();
+
+	// Init popups--------------
+	(function initPopups() {
+		let popups = document.querySelectorAll('.popup');
+		let btnShow = document.querySelectorAll('.show-popup');
+		let btnClose = document.querySelectorAll('.close-popup');
 
 		let popupRemove = function() {
 			for (let i = 0; i < popups.length; i++) {
@@ -41,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					e.preventDefault();
 					popupRemove();
 					let popupClass = `.${this.getAttribute('data-popup')}`;
-					elBg.querySelector(popupClass).classList.add('active');
+					document.querySelector(popupClass).classList.add('active');
 				}, false);
 			}
 			closePopup();
@@ -57,89 +83,81 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 
 		showPopup();
+	}) ();
+
+	// Randomizer --------------
+	function mtRand(min, max) {
+		return Math.floor(Math.random() * (max - min + 1) + min);
 	}
-	initPopups();
 
-	elBucket.addEventListener('animationend', function() {
-		// Start Game ----------------
-		life.parentNode.classList.add('active');
-		btnPause.classList.add('active');
-		rec.parentNode.classList.add('active');
+	// Animate --------------
+	function animate({timing, draw, duration}) {
+		let start = performance.now();
+		
+		requestAnimationFrame(function animate(time) {
+			let timeFraction = (time - start) / duration;
+			if (timeFraction > 1) timeFraction = 1;
+		
+			let progress = timing(timeFraction);
+		
+			draw(progress);
+		
+			if (timeFraction < 1) {
+				requestAnimationFrame(animate);
+			}
+		});
+	}
 
-		// Move Bucket --------------
-		function moveBucket() {
-			elBucket.addEventListener('mousedown', function(e) {
-				let backetCoords = getCoords(elBucket);
-				let shiftX = e.pageX - backetCoords.left;
-				let bgCoords = getCoords(elBg);
-				
-				document.onmousemove = function(e) {
-					let newLeft = e.pageX - shiftX - bgCoords.left;
-					let rightEdge = elBg.offsetWidth - widthBuket;
+	// Move Bucket --------------
+	(function moveBucket() {
+		elBucket.addEventListener('mousedown', function(e) {
+			let backetCoords = getCoords(elBucket);
+			let shiftX = e.pageX - backetCoords.left;
+			let bgCoords = getCoords(sectionGame);
 			
-					if (newLeft < 0) {
-						newLeft = 0;
-					}
-					if (newLeft > rightEdge) {
-						newLeft = rightEdge;
-					}
-					elBucket.style.left = newLeft + 'px';
-				};
-
-				document.onmouseup = function() {
-					document.onmousemove = document.onmouseup = null;
-				};
-				return false;
-			});
-
-			elBucket.ondragstart = function() {
-				return false;
+			document.onmousemove = function(e) {
+				let newLeft = e.pageX - shiftX - bgCoords.left;
+				let rightEdge = sectionGame.offsetWidth - widthBuket;
+		
+				if (newLeft < 0) newLeft = 0;
+				if (newLeft > rightEdge) newLeft = rightEdge;
+				elBucket.style.left = newLeft + 'px';
 			};
 
-			function getCoords(elem) {
-				var box = elem.getBoundingClientRect();
+			document.onmouseup = function() {
+				document.onmousemove = document.onmouseup = null;
+			};
+			return false;
+		});
 
-				return {
-					top: box.top + pageYOffset,
-					left: box.left + pageXOffset
-				};
-			}
+		elBucket.ondragstart = function() {
+			return false;
+		};
+
+		function getCoords(elem) {
+			var box = elem.getBoundingClientRect();
+
+			return {
+				top: box.top + pageYOffset,
+				left: box.left + pageXOffset
+			};
 		}
-		moveBucket();
+	}) ();
 
-		// Randomizer --------------
-		function mtRand(min, max) {
-			return Math.floor(Math.random() * (max - min + 1) + min);
-		} 
+	// Start Game ----------------
+	btnStart.addEventListener('click', function() {
+		sectionGame.classList.add('active');
+		life.parentNode.classList.add('active');
+		rec.parentNode.classList.add('active');
 
-		// Animate --------------
-		function animate({timing, draw, duration}) {
-			let start = performance.now();
-			
-			requestAnimationFrame(function animate(time) {
-				let timeFraction = (time - start) / duration;
-				if (timeFraction > 1) timeFraction = 1;
-			
-				let progress = timing(timeFraction);
-			
-				draw(progress);
-			
-				if (timeFraction < 1) {
-					requestAnimationFrame(animate);
-				}
-			});
-		}
-		
 		// Animate fall init -----------
-		function animateFallInt(bricks) {
+		function initAnimateFall(bricks) {
 			animate({
-				duration: mtRand(2500, 9000),
-				timing: function linear(timeFraction) {
-					return timeFraction;
+				timing: timeFraction => timeFraction,
+				draw: progress => {					
+					bricks.style.top = `${progress * workHeight}px`;
 				},
-				draw: function(progress) {					
-					bricks.style.top = progress * workHeight  + 'px';
-				}
+				duration: mtRand(2500, 9000)
 			});
 		}
 
@@ -150,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		// Fall -------------
 		function brickFall(brick) {
-			animateFallInt(brick);
+			initAnimateFall(brick);
 
 			let falling = setInterval(function() {
 				if (checkCatch(brick)) {
@@ -158,11 +176,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					clearInterval(falling);
 					brick.parentNode.removeChild(brick);
 					recSum++;
-					rec.innerHTML = recSum;
+					rec.textContent = recSum;
 
 					if (recSum % 10 == 0) {
 						lifeSum++;
-						life.innerHTML = lifeSum;
+						life.textContent = lifeSum;
 					}
 				}
 
@@ -171,11 +189,11 @@ document.addEventListener('DOMContentLoaded', function() {
 					clearInterval(falling);
 					brick.remove();
 					lifeSum--;
-					life.innerHTML = lifeSum;
+					life.textContent = lifeSum;
 
 					if (lifeSum <= 0) {
 						lifeSum = 0;
-						life.innerHTML = lifeSum;
+						life.textContent = lifeSum;
 						gameOver();
 					}
 				}				
@@ -196,12 +214,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
 			let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
 			let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
-			let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);	
+			let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+
 			return (
 				elBrickT > elBucketT &&
 				(elBucketB - minFromHeightBuket) > elBrickT &&
 				elBrickL > elBucketL && 
-				elBrickR < elBucketR);
+				elBrickR < elBucketR
+			);
 		}
 
 		// Fail --------------
@@ -212,8 +232,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Brick clone --------------
 		function fall() {
 			brickSet[i] = elBrick.cloneNode();
-			brickSet[i].style.left = mtRand(0, workWidth) + 'px';
-			elBg.appendChild(brickSet[i]);
+			brickSet[i].style.left = `${mtRand(0, workWidth)}px`;
+			sectionGame.appendChild(brickSet[i]);
 			brickFall(brickSet[i]);
 			i++;
 
@@ -227,38 +247,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		function gameOver() {
 			clearInterval(brickInterval);
 			wrapGameOver.classList.add('active');
+			sectionGame.classList.remove('active');
 		}
 
-		// Pause ------------------
-		function addPause() {
-			for (let i = 0; i < brickSet.length; i++) {
-				let brick = brickSet[i];
-				brick.classList.add('stop');
-			}
-			
-			wrapPause.classList.add('active');
-		}
-
-		function removePause() {
-			for (let i = 0; i < brickSet.length; i++) {
-				let brick = brickSet[i];
-				let style = getComputedStyle(brick);
-				if (style.top == startPos) brick.remove();
-			}
-		}
-
-		// Pause blur --------------------
-		window.onblur = function() {
-			console.log('pause');
-			addPause();
-		};
-
-		// Continue focus -----------------
-		window.onfocus = function() {
-			console.log('play');
-			removePause();
-		};
-			
-	});
-	
+	}, false);	
 });

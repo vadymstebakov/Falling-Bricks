@@ -16,7 +16,7 @@ ul, ol {
 	padding: 0;
 }
 
-html, body {
+html {
     height: 100%;
 }
 
@@ -24,10 +24,7 @@ body {
     margin: 0;
 	overflow: hidden;
 	font-family: 'headliner', sans-serif;
-}
-
-#bg {
-    background: url('../img/stroyka_4_01.jpg') no-repeat center center;
+	background: url('../img/stroyka_4_01.jpg') no-repeat center center;
     position: relative;
     min-height: 100%;
     background-size: cover;
@@ -36,6 +33,25 @@ body {
 
 		.brick {
 			will-change: transform;
+		}
+	}
+}
+
+.section-game {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	&.active {
+
+		.score {
+			opacity: 1;
+		}
+
+		.bucket {
+			animation: bucket .8s;
 		}
 	}
 }
@@ -73,7 +89,7 @@ body {
 		left: 30px;
 		top: 0;
 		width: 30px;
-		height: 48px;
+		height: 100%;
 		background: #ff3838;
 		border-radius: 50px 50px 0 0;
 		transform: rotate(-45deg);
@@ -84,24 +100,6 @@ body {
 		left: 0;
 		transform: rotate(45deg);
 		transform-origin: 100% 100%;
-	}
-}
-
-.btn {
-	display: inline-block;
-	position: relative;
-	text-decoration: none;
-	cursor: pointer;
-	font-size: 50px;
-	line-height: 40px;
-	color: #ff3838;
-	opacity: 0;
-	visibility: hidden;
-	transition: all .5s ease;
-
-	&.active {
-		opacity: 1;
-		visibility: visible;
 	}
 }
 
@@ -121,29 +119,21 @@ body {
 	opacity: 0;
 	color: #2d3436;
 	transition: all 1s ease;
-
-	&.active {
-		opacity: 1;
-	}
 }
 
-#bucket {
+.bucket {
     width: 120px;
     height: 120px;
     position: absolute;
     bottom: 0;
 	left: 42%;
-	animation: bucket .8s linear;
 }
 
 @keyframes bucket {
-	0%{
+	from {
 		left: -100%;
     }
-    50%{
-		left: 0%;
-    }
-	100%{
+	to {
 		left: 42%;
     }
 }
@@ -165,31 +155,31 @@ body {
 }
 
 @keyframes brickFirst {
-    0%{
+    0% {
         transform: rotate(0deg);
     }
-    15%{
+    15% {
         transform: rotate(45deg);
     }
-    25%{
+    25% {
         transform: rotate(90deg);
     }
-    35%{
+    35% {
         transform: rotate(135deg);
     }
-    45%{
+    45% {
         transform: rotate(180deg);
     }
-    55%{
+    55% {
         transform: rotate(225deg);
     }
-    75%{
+    75% {
         transform: rotate(270deg);
     }
-    90%{
+    90% {
         transform: rotate(315deg);
     }
-    100%{
+    100% {
         transform: rotate(360deg);
     }
 }
@@ -197,14 +187,13 @@ body {
 .popup {
 	position: fixed;
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	flex-direction: column;
 	z-index: 5;
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(0, 0, 0, .9);
+	background-color: rgba(0, 0, 0, .7);
 	transform: translateY(-100%);
 	transition: all .4s ease;
 
@@ -212,15 +201,34 @@ body {
 		transform: translateY(0%);
 	}
 
-	&_end {
-		flex-direction: column;
+	&--first-start {
+	
+		.user-name {
+			display: flex;
+		}
+	
+		.start-menu {
+			display: none;
+		}
 	}
 
 	&__wrap {
+		margin: auto;
+	}
+
+	&__title {
+		font-size: 100px;
+		color: #ff3838;
+		text-align: center;
+		margin-bottom: 10px;
+	}
+
+	&__inner {
 		padding: 30px;
 		background-color: #fff;
 		max-width: 250px;
 		width: 100%;
+		margin: 0 auto;
 		border: 10px solid #ff3838;
 	}
 
@@ -243,11 +251,45 @@ body {
 			}
 		}
 	}
+}
 
-	&__end-inner {
-		font-size: 100px;
-		color: #ff3838;
-		text-align: center;
-		margin-bottom: 10px;
+.start-menu {
+	display: block;
+}
+
+.user-name {
+	display: none;
+	justify-content: center;
+	align-items: center;
+	font-size: 16px;
+
+	input {
+		color: #fff;
+		background-color: #2d3436;
+		max-width: 150px;
+		border: 2px solid #ff3838;
+		padding: 5px;
+		outline: none;
+
+		&::placeholder {
+			color: #fef;
+			line-height: normal;
+		}
+	}
+}
+
+.btn {
+	padding: 5px 10px;
+	cursor: pointer;
+	display: inline-block;
+	margin-left: 5px;
+	color: #fff;
+	background-color: #2d3436;
+	border: 2px solid #ff3838;
+	transition: border .2s ease;
+	outline: none;
+
+	&:hover {
+		border: 2px solid #2d3436;
 	}
 }

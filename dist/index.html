@@ -8,40 +8,51 @@
     <script src="js/script.js" defer></script>   
 </head>
 <body>
-    <div id="bg">
-		<div class="options">
-			<div class="attempts-wrap">
-				<span class="heart"></span>
-				<span class="attempts">3</span>
-			</div>
-			<a href="#" class="btn show-popup" data-popup="popup_pause">
-				<span>Pause</span>
-			</a>	
-		</div>
-		<div class="popup popup_pause">
-			<ul class="popup__wrap">
-				<li class="popup__item">
-					<a href="#" class="close-popup">Continue</a>
-				</li>
-				<li class="popup__item">
-					<a href="index.html">Exit</a>
-				</li>
-			</ul>
-		</div>
-		<div class="popup popup_end">
-			<div class="popup__end-inner">Game over</div>
-			<ul class="popup__wrap">
-				<li class="popup__item">
-					<a href="#" class="close-popup">Restart</a>
-				</li>
-				<li class="popup__item">
-					<a href="index.html">Exit</a>
-				</li>
-			</ul>
-		</div>
-        <div class="score">Score: <span id="record">0</span></div>
-        <img src="img/Vedro.png" alt="" id="bucket">
+	<div class="options">
+		<div class="attempts-wrap">
+			<span class="heart"></span>
+			<span class="attempts">3</span>
+		</div>	
+	</div>
+	<section id="game" class="section-game">
+		<div class="score">Score: <span class="record">0</span></div>
+		<img src="img/Vedro.png" alt="" class="bucket">
 		<div class="brick"></div>
-    </div>
+	</section>
+	<div id="popup-start" class="popup popup--start popup--first-start">
+		<div class="popup__wrap">
+			<div class="popup__title">Falling bricks</div>
+			<div class="popup__inner">
+				<form class="user-name">
+					<input type="text" placeholder="Your name" required>
+					<button type="submit" class="btn">ok</button>
+				</form>
+				<ul class="popup__list start-menu">
+					<li class="popup__item">
+						<a href="#" class="close-popup start-game">Start game</a>
+					</li>
+					<li class="popup__item">
+						<a href="#" class="show-popup">Highscores</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="popup popup--end">
+		<div class="popup__wrap">
+			<div class="popup__title">Game over</div>
+			<div class="popup__inner">
+				<ul class="popup__list">
+					<li class="popup__item">Your score: 10</li>
+					<li class="popup__item">
+						<a href="#" class="close-popup">Restart</a>
+					</li>
+					<li class="popup__item">
+						<a href="index.html">Exit</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 </body>
 </html>
