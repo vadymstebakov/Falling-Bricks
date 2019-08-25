@@ -16,6 +16,18 @@ ul, ol {
 	padding: 0;
 }
 
+a {
+	color: inherit;
+	cursor: pointer;
+	background-color: transparent;
+	text-decoration: none;
+
+	&:hover,
+	&:focus {
+		text-decoration: none;
+	}
+}
+
 html {
     height: 100%;
 }
@@ -46,12 +58,11 @@ body {
 
 	&.active {
 
-		.score {
-			opacity: 1;
-		}
-
+		.score,
 		.bucket {
-			animation: bucket .8s;
+			opacity: 1;
+			visibility: visible;
+			transition: opacity 1s ease, visibility 0s 0s;
 		}
 	}
 }
@@ -117,8 +128,9 @@ body {
 	transform: translate(-50%, -50%);
     font-size: 100px;
 	opacity: 0;
+	visibility: hidden;
 	color: #2d3436;
-	transition: all 1s ease;
+	transition: opacity 1s ease, visibility 0s 1s;
 }
 
 .bucket {
@@ -127,15 +139,10 @@ body {
     position: absolute;
     bottom: 0;
 	left: 42%;
-}
-
-@keyframes bucket {
-	from {
-		left: -100%;
-    }
-	to {
-		left: 42%;
-    }
+	transition: opacity 1s ease, visibility 0s 1s;
+	opacity: 0;
+	visibility: hidden;
+	cursor: grab;
 }
 
 .brick {
@@ -188,6 +195,7 @@ body {
 	position: fixed;
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	z-index: 5;
 	top: 0;
 	left: 0;
@@ -214,6 +222,7 @@ body {
 
 	&__wrap {
 		margin: auto;
+		width: 100%;
 	}
 
 	&__title {
@@ -234,16 +243,19 @@ body {
 
 	&__item {
 		text-align: center;
+		font-size: 35px;
+		line-height: 1em;
+		color: #2d3436;
+
+		&--score {
+			font-size: 40px;
+		}
 
 		&:nth-child(n+2) {
 			margin-top: 15px;
 		}
 
 		a {
-			font-size: 35px;
-			line-height: 35px;
-			text-decoration: none;
-			color: #2d3436;
 			transition: all .3s ease;
 
 			&:hover {
@@ -251,6 +263,10 @@ body {
 			}
 		}
 	}
+}
+
+.score-final {
+	color: #ff3838;
 }
 
 .start-menu {

@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>bucketCatch</title>
+    <title>Falling bricks</title>
 	<link rel="stylesheet" href="css/style.css">
-	<script src="js/polyfill.js" defer></script>
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.closest%2CElement.prototype.remove" defer></script>
     <script src="js/script.js" defer></script>   
 </head>
 <body>
 	<div class="options">
 		<div class="attempts-wrap">
 			<span class="heart"></span>
-			<span class="attempts">3</span>
+			<span class="attempts">0</span>
 		</div>	
 	</div>
 	<section id="game" class="section-game">
@@ -38,17 +38,17 @@
 			</div>
 		</div>
 	</div>
-	<div class="popup popup--end">
+	<div id="popup-end" class="popup popup--end">
 		<div class="popup__wrap">
 			<div class="popup__title">Game over</div>
 			<div class="popup__inner">
 				<ul class="popup__list">
-					<li class="popup__item">Your score: 10</li>
+					<li class="popup__item popup__item--score">Your score: <span class="score-final"></span></li>
 					<li class="popup__item">
-						<a href="#" class="close-popup">Restart</a>
+						<a href="#" class="close-popup start-game">Restart</a>
 					</li>
 					<li class="popup__item">
-						<a href="index.html">Exit</a>
+						<a href="#" class="show-popup">Highscores</a>
 					</li>
 				</ul>
 			</div>

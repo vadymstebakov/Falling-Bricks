@@ -2,27 +2,25 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 	const popupStart = document.getElementById('popup-start');
-	const btnStart = popupStart.querySelector('.start-game');
+	const popupEnd = document.getElementById('popup-end');
 	const sectionGame = document.getElementById('game');
-	let elBucket = sectionGame.querySelector('.bucket');
-	let elBrick = sectionGame.querySelectorAll('.brick')[0];
+	const elBucket = sectionGame.querySelector('.bucket');
+	const elBrick = sectionGame.querySelector('.brick');
 	const brickSet = [];
 	const widthBuket = elBucket.offsetWidth;
 	const minFromHeightBuket = 75;
 	const widthBrick = elBrick.offsetWidth;
 	const heightBrick = elBrick.offsetHeight;
-	let i = 0;
-	let rec = sectionGame.querySelector('.record');
-	let recSum = 0;
-	let life = document.querySelector('.attempts');
-	let lifeSum = 3;
-	let wrapGameOver = document.querySelector('.popup--end'); 
+	const score = sectionGame.querySelector('.record');
+	const life = document.querySelector('.attempts');
+	const finalScore = popupEnd.querySelector('.score-final');
 	let screenWidth = document.documentElement.offsetWidth;
 	let screenHeight = document.documentElement.offsetHeight;
 	let workWidth = screenWidth - widthBrick;
 	let workHeight = screenHeight + heightBrick;
-	const startPos = '-100px';
 	let removed = false;
+	let i = 0;
+	let scoreSum, lifeSum;
 
 	// Save name
 	(function saveName() {
@@ -108,6 +106,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 
+	// Animate fall init -----------
+	function initAnimateFall(bricks) {
+		animate({
+			timing: timeFraction => timeFraction,
+			draw: progress => {					
+				bricks.style.top = `${progress * workHeight}px`;
+			},
+			duration: mtRand(2500, 9000)
+		});
+	}
+
 	// Move Bucket --------------
 	(function moveBucket() {
 		elBucket.addEventListener('mousedown', function(e) {
@@ -145,47 +154,62 @@ document.addEventListener('DOMContentLoaded', function() {
 	}) ();
 
 	// Start Game ----------------
-	btnStart.addEventListener('click', function() {
+	document.addEventListener('click', function(e) {
+		let btnStart = e.target.closest('.start-game');
+		
+		if (!btnStart) return;
+
 		sectionGame.classList.add('active');
 		life.parentNode.classList.add('active');
-		rec.parentNode.classList.add('active');
+		lifeSum = 3;
+		life.textContent = lifeSum;
+		scoreSum = 0;
+		score.textContent = scoreSum;
 
-		// Animate fall init -----------
-		function initAnimateFall(bricks) {
-			animate({
-				timing: timeFraction => timeFraction,
-				draw: progress => {					
-					bricks.style.top = `${progress * workHeight}px`;
-				},
-				duration: mtRand(2500, 9000)
-			});
-		}
-
-		// Fall init --------------
+		// Clone init --------------
 		let brickInterval = setInterval(function() { 
-			fall();
+			cloneBrick();
 		}, 3000);
 		
 		// Fall -------------
 		function brickFall(brick) {
 			initAnimateFall(brick);
 
-			let falling = setInterval(function() {
+			// Catch ----------------
+			const checkCatch = brick => {
+				let elBrickL = Math.floor(brick.getBoundingClientRect().left);
+				let elBrickR = Math.floor(brick.getBoundingClientRect().right);
+				let elBrickT = Math.floor(brick.getBoundingClientRect().top);
+				let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
+				let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
+				let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
+				let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+
+				return Boolean(
+					elBrickT > elBucketT &&
+					(elBucketB - minFromHeightBuket) > elBrickT &&
+					elBrickL > elBucketL && 
+					elBrickR < elBucketR
+				);
+			};
+
+			// Fail --------------
+			const checkFail = brick => Boolean(parseInt(brick.style.top) >= screenHeight);
+
+			const falling = setInterval(function() {
 				if (checkCatch(brick)) {
-					// console.log('catch');
 					clearInterval(falling);
 					brick.parentNode.removeChild(brick);
-					recSum++;
-					rec.textContent = recSum;
+					scoreSum++;
+					score.textContent = scoreSum;
 
-					if (recSum % 10 == 0) {
+					if (scoreSum % 10 === 0) {
 						lifeSum++;
 						life.textContent = lifeSum;
 					}
 				}
 
 				if (checkFail(brick)) {
-					// console.log('fail');
 					clearInterval(falling);
 					brick.remove();
 					lifeSum--;
@@ -198,39 +222,15 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 				}				
 
-				if (wrapGameOver.classList.contains('active')) {
+				if (popupEnd.classList.contains('active')) {
 					clearInterval(falling);					
 					return brick.remove();
 				}
-
 			}, 15);
 		}
 
-		// Catch ----------------
-		function checkCatch(brick) {
-			let elBrickL = Math.floor(brick.getBoundingClientRect().left);
-			let elBrickR = Math.floor(brick.getBoundingClientRect().right);
-			let elBrickT = Math.floor(brick.getBoundingClientRect().top);
-			let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
-			let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
-			let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
-			let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
-
-			return (
-				elBrickT > elBucketT &&
-				(elBucketB - minFromHeightBuket) > elBrickT &&
-				elBrickL > elBucketL && 
-				elBrickR < elBucketR
-			);
-		}
-
-		// Fail --------------
-		function checkFail(brick) {			
-			return (parseInt(brick.style.top) >= screenHeight);
-		}
-
 		// Brick clone --------------
-		function fall() {
+		function cloneBrick() {
 			brickSet[i] = elBrick.cloneNode();
 			brickSet[i].style.left = `${mtRand(0, workWidth)}px`;
 			sectionGame.appendChild(brickSet[i]);
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			i++;
 
 			if (!removed) {
-				elBrick.parentNode.removeChild(elBrick);
+				elBrick.remove();
 				removed = true;
 			}	
 		}
@@ -246,8 +246,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Game Over --------------
 		function gameOver() {
 			clearInterval(brickInterval);
-			wrapGameOver.classList.add('active');
+			popupEnd.classList.add('active');
 			sectionGame.classList.remove('active');
+			life.parentNode.classList.remove('active');
+			finalScore.textContent = scoreSum;
 		}
 
 	}, false);	
