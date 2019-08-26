@@ -21,7 +21,7 @@ module.exports = function(options) {
 				$.remember.forget('style', filepathdel.resolve(filepath));
 				delete $.cached.caches.style[filepathdel.resolve(filepath)];
 			});
-		
+	
 		gulp.watch(options.jsWatch, gulp.series('js'))
 			.on('unlink', function(filepath) {
 				$.remember.forget('js', filepathdel.resolve(filepath));

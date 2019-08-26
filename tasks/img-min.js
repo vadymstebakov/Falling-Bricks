@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 const $ = require('gulp-load-plugins')();
-const pngquant = require('imagemin-pngquant');
+const imgCompress = require('imagemin-jpeg-recompress');
 
 module.exports = function(options) {
 	return function() {
@@ -10,12 +10,17 @@ module.exports = function(options) {
 			.pipe($.cached('img'))
 			.pipe($.newer(options.dist))
 			.pipe($.debug({title: 'DEBUG img'}))
-			.pipe($.imagemin({
-				interlaced: true,
-				progressive: true,
-				svgoPlugins: [{removeVeiwBox: false}],
-				une: [pngquant()]
-			}))
+			.pipe($.imagemin([
+				imgCompress({
+					loops: 4,
+					min: 70,
+					max: 80,
+					quality: 'veryhigh'
+				}),
+				$.imagemin.gifsicle(),
+				$.imagemin.optipng(),
+				$.imagemin.svgo()
+			]))
 			.pipe(gulp.dest(options.dist));
 	};	
 };

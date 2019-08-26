@@ -1,6 +1,7 @@
 {
     "env": {
-        "browser": true,
+		"browser": true,
+		"node": true,
         "commonjs": true,
 		"es6": true,
 		"jquery": true
@@ -8,23 +9,13 @@
     "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaVersion": 2015
-    },
+	},
     "rules": {
-        "indent": [
-            "error",
-            "tab"
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
-    }
+        "indent": [2, "tab"],
+        "linebreak-style": [2, "windows"],
+        "quotes": [2, "single"],
+        "semi": [2, "always"],
+		"no-empty": 0,
+		"no-mixed-spaces-and-tabs": 0
+	}
 }

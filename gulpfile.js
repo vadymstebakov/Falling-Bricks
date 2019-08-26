@@ -7,16 +7,14 @@ const path = {
 		style: 'dist/css/',
 		js: 'dist/js/',
 		img: 'dist/img/',
-		fonts: 'dist/fonts/',
-		svg: 'src/img/svg/'
+		fonts: 'dist/fonts/'
 	},
 	src: {
 		html: 'src/*.html',
 		style: 'src/scss/**/*.scss',
 		js: 'src/js/**/*.js',
 		img: 'src/img/**/*',
-		fonts: 'src/fonts/**/*',
-		svg: 'src/img/svg/**/*.svg'
+		fonts: 'src/fonts/**/*'
 	},
 	watch: {
 		html: 'src/*.html',
@@ -28,8 +26,7 @@ const path = {
 };
 
 // Lazy Task
-function lazyRequireTask(taskName, path, options) {
-	options = options || {};
+function lazyRequireTask(taskName, path, options = {}) {
 	options.taskName = taskName;
 	gulp.task(taskName, function(callback) {
 		let task = require(path).call(this, options);
@@ -43,7 +40,7 @@ lazyRequireTask('html', './tasks/html.js', {
 	dist: path.dist.html
 });
 
-// CSS
+// SCSS to CSS
 lazyRequireTask('style', './tasks/style.js', {
 	src: path.src.style,
 	dist: path.dist.style
@@ -67,21 +64,16 @@ lazyRequireTask('fonts', './tasks/fonts.js', {
 	dist: path.dist.fonts
 });
 
-// SVG
-lazyRequireTask('svg-sprite', './tasks/svg-sprite.js', {
-	src: path.src.svg,
-	dist: path.dist.svg
-});
-
 // Clear dir
 lazyRequireTask('clean', './tasks/clean.js', {
-	src: 'dist/'
+	src: 'dist'
 });
 
 // Browser-Sync
 lazyRequireTask('browser-sync', './tasks/browser-sync.js', {
 	src: 'dist/**/*.*'
 });
+
 
 // Builder
 gulp.task('build', gulp.parallel(

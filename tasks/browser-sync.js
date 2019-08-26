@@ -10,7 +10,8 @@ module.exports = function(options) {
 			},
 			notify: false,
 			ghostMode: false,
-			tunnel: true
+			// online: false,
+			// tunnel: true
 		});
 		
 		browserSync.watch(options.src)
