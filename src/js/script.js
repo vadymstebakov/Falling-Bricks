@@ -167,8 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		score.textContent = scoreSum;
 
 		// Clone init --------------
-		let brickInterval = setInterval(function() { 
+		let initBrickFall = setTimeout(function fnFall() { 
 			cloneBrick();
+			initBrickFall = setTimeout(fnFall, 3000);
 		}, 3000);
 		
 		// Fall -------------
@@ -196,9 +197,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Fail --------------
 			const checkFail = brick => Boolean(parseInt(brick.style.top) >= screenHeight);
 
-			const falling = setInterval(function() {
+			let initChecking = setInterval(function() {
 				if (checkCatch(brick)) {
-					clearInterval(falling);
+					clearInterval(initChecking);
 					brick.parentNode.removeChild(brick);
 					scoreSum++;
 					score.textContent = scoreSum;
@@ -210,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 
 				if (checkFail(brick)) {
-					clearInterval(falling);
+					clearInterval(initChecking);
 					brick.remove();
 					lifeSum--;
 					life.textContent = lifeSum;
@@ -223,9 +224,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				}				
 
 				if (popupEnd.classList.contains('active')) {
-					clearInterval(falling);					
-					return brick.remove();
+					clearInterval(initChecking);					
+					brick.remove();
 				}
+
 			}, 15);
 		}
 
@@ -245,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Game Over --------------
 		function gameOver() {
-			clearInterval(brickInterval);
+			clearTimeout(initBrickFall);
 			popupEnd.classList.add('active');
 			sectionGame.classList.remove('active');
 			life.parentNode.classList.remove('active');
