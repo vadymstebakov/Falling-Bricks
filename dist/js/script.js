@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var sectionGame = document.getElementById('game');
   var elBucket = sectionGame.querySelector('.bucket');
   var elBrick = sectionGame.querySelector('.brick');
-  var brickSet = [];
   var widthBuket = elBucket.offsetWidth;
   var minFromHeightBuket = 75;
   var widthBrick = elBrick.offsetWidth;
@@ -18,9 +17,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var screenHeight = document.documentElement.offsetHeight;
   var workWidth = screenWidth - widthBrick;
   var workHeight = screenHeight + heightBrick;
-  var removed = false;
-  var i = 0;
-  var scoreSum, lifeSum;
+  var removedBrick = false;
+  var scoreSum, lifeSum, newBrick, oldScore;
 
   // Save name
   (function saveName() {
@@ -54,14 +52,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var btnClose = document.querySelectorAll('.close-popup');
 
     var popupRemove = function popupRemove() {
-      for (var _i = 0; _i < popups.length; _i++) {
-        popups[_i].classList.remove('active');
+      for (var i = 0; i < popups.length; i++) {
+        popups[i].classList.remove('active');
       }
     };
 
     var showPopup = function showPopup() {
-      for (var _i2 = 0; _i2 < btnShow.length; _i2++) {
-        btnShow[_i2].addEventListener('click', function (e) {
+      for (var i = 0; i < btnShow.length; i++) {
+        btnShow[i].addEventListener('click', function (e) {
           e.preventDefault();
           popupRemove();
           var popupClass = ".".concat(this.getAttribute('data-popup'));
@@ -72,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     var closePopup = function closePopup() {
-      for (var _i3 = 0; _i3 < btnClose.length; _i3++) {
-        btnClose[_i3].addEventListener('click', function (e) {
+      for (var i = 0; i < btnClose.length; i++) {
+        btnClose[i].addEventListener('click', function (e) {
           e.preventDefault();
           popupRemove();
         }, false);
@@ -82,40 +80,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     showPopup();
   })();
-
-  // Randomizer --------------
-  function mtRand(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-
-  // Animate --------------
-  function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
-    var start = performance.now();
-
-    requestAnimationFrame(function animate(time) {
-      var timeFraction = (time - start) / duration;
-      if (timeFraction > 1) timeFraction = 1;
-
-      var progress = timing(timeFraction);
-
-      draw(progress);
-
-      if (timeFraction < 1) {
-        requestAnimationFrame(animate);
-      }
-    });
-  }
-
-  // Animate fall init -----------
-  function initAnimateFall(bricks) {
-    animate({
-      timing: function timing(timeFraction) {return timeFraction;},
-      draw: function draw(progress) {
-        bricks.style.top = "".concat(progress * workHeight, "px");
-      },
-      duration: mtRand(2500, 9000) });
-
-  }
 
   // Move Bucket --------------
   (function moveBucket() {
@@ -153,9 +117,63 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   })();
 
+  // Randomizer --------------
+  var mtRand = function mtRand(min, max) {return Math.floor(Math.random() * (max - min + 1) + min);};
+
+  // Animate --------------
+  var animate = function animate(_ref) {var timing = _ref.timing,draw = _ref.draw,duration = _ref.duration;
+    var start = performance.now();
+
+    requestAnimationFrame(function animate(time) {
+      var timeFraction = (time - start) / duration;
+      if (timeFraction > 1) timeFraction = 1;
+
+      var progress = timing(timeFraction);
+
+      draw(progress);
+
+      if (timeFraction < 1) {
+        requestAnimationFrame(animate);
+      }
+    });
+  };
+
+  // Animate fall init -----------
+  var initAnimateFall = function initAnimateFall(bricks) {
+    animate({
+      timing: function timing(timeFraction) {return timeFraction;},
+      draw: function draw(progress) {
+        bricks.style.top = "".concat(progress * workHeight, "px");
+      },
+      duration: mtRand(2500, 9000) });
+
+  };
+
+  // Catch ----------------
+  var checkCatch = function checkCatch(brick) {
+    var elBrickL = Math.floor(brick.getBoundingClientRect().left);
+    var elBrickR = Math.floor(brick.getBoundingClientRect().right);
+    var elBrickT = Math.floor(brick.getBoundingClientRect().top);
+    var elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
+    var elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
+    var elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
+    var elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+
+    return Boolean(
+    elBrickT > elBucketT &&
+    elBucketB - minFromHeightBuket > elBrickT &&
+    elBrickL > elBucketL &&
+    elBrickR < elBucketR);
+
+  };
+
+  // Fail --------------
+  var checkFail = function checkFail(brick) {return Boolean(parseInt(brick.style.top) >= screenHeight);};
+
   // Start Game ----------------
   document.addEventListener('click', function (e) {
     var btnStart = e.target.closest('.start-game');
+    var speedAppearing = 3000;
 
     if (!btnStart) return;
 
@@ -166,52 +184,45 @@ document.addEventListener('DOMContentLoaded', function () {
     scoreSum = 0;
     score.textContent = scoreSum;
 
-    // Clone init --------------
-    var initBrickFall = setTimeout(function fnFall() {
-      cloneBrick();
-      initBrickFall = setTimeout(fnFall, 3000);
-    }, 3000);
+    // Set score ---------------
+    var setScore = function setScore(score) {
+      if (!localStorage.getItem('score')) localStorage.setItem('score', score);
+
+      oldScore = localStorage.getItem('score');
+
+      if (oldScore < score) localStorage.setItem('score', score);
+    };
+
+    // Game Over --------------
+    var gameOver = function gameOver() {
+      clearTimeout(initBrickFall);
+      popupEnd.classList.add('active');
+      sectionGame.classList.remove('active');
+      life.parentNode.classList.remove('active');
+      finalScore.textContent = scoreSum;
+      setScore(scoreSum);
+    };
 
     // Fall -------------
-    function brickFall(brick) {
+    var brickFall = function brickFall(brick) {
       initAnimateFall(brick);
 
-      // Catch ----------------
-      var checkCatch = function checkCatch(brick) {
-        var elBrickL = Math.floor(brick.getBoundingClientRect().left);
-        var elBrickR = Math.floor(brick.getBoundingClientRect().right);
-        var elBrickT = Math.floor(brick.getBoundingClientRect().top);
-        var elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
-        var elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
-        var elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
-        var elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
-
-        return Boolean(
-        elBrickT > elBucketT &&
-        elBucketB - minFromHeightBuket > elBrickT &&
-        elBrickL > elBucketL &&
-        elBrickR < elBucketR);
-
-      };
-
-      // Fail --------------
-      var checkFail = function checkFail(brick) {return Boolean(parseInt(brick.style.top) >= screenHeight);};
-
-      var initChecking = setInterval(function () {
+      var initChecking = setTimeout(function fnCheck() {
         if (checkCatch(brick)) {
-          clearInterval(initChecking);
-          brick.parentNode.removeChild(brick);
+          brick.remove();
           scoreSum++;
           score.textContent = scoreSum;
 
           if (scoreSum % 10 === 0) {
             lifeSum++;
             life.textContent = lifeSum;
+            speedAppearing -= 100;
           }
+
+          return;
         }
 
         if (checkFail(brick)) {
-          clearInterval(initChecking);
           brick.remove();
           lifeSum--;
           life.textContent = lifeSum;
@@ -220,39 +231,33 @@ document.addEventListener('DOMContentLoaded', function () {
             lifeSum = 0;
             life.textContent = lifeSum;
             gameOver();
+            return clearTimeout(initChecking);
           }
+
+          return;
         }
 
-        if (popupEnd.classList.contains('active')) {
-          clearInterval(initChecking);
-          brick.remove();
-        }
+        if (popupEnd.classList.contains('active')) return brick.remove();
 
-      }, 15);
-    }
+        initChecking = setTimeout(fnCheck, 0);
+      }, 0);
+    };
 
     // Brick clone --------------
-    function cloneBrick() {
-      brickSet[i] = elBrick.cloneNode();
-      brickSet[i].style.left = "".concat(mtRand(0, workWidth), "px");
-      sectionGame.appendChild(brickSet[i]);
-      brickFall(brickSet[i]);
-      i++;
+    var cloneBrick = function cloneBrick() {
+      newBrick = elBrick.cloneNode();
+      newBrick.style.left = "".concat(mtRand(0, workWidth), "px");
+      sectionGame.appendChild(newBrick);
+      brickFall(newBrick);
 
-      if (!removed) {
-        elBrick.remove();
-        removed = true;
-      }
-    }
+      if (!removedBrick) elBrick.remove();
+    };
 
-    // Game Over --------------
-    function gameOver() {
-      clearTimeout(initBrickFall);
-      popupEnd.classList.add('active');
-      sectionGame.classList.remove('active');
-      life.parentNode.classList.remove('active');
-      finalScore.textContent = scoreSum;
-    }
+    // Clone init --------------
+    var initBrickFall = setTimeout(function fnFall() {
+      cloneBrick();
+      initBrickFall = setTimeout(fnFall, speedAppearing);
+    }, speedAppearing);
 
   }, false);
 });

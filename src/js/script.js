@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	const sectionGame = document.getElementById('game');
 	const elBucket = sectionGame.querySelector('.bucket');
 	const elBrick = sectionGame.querySelector('.brick');
-	const brickSet = [];
 	const widthBuket = elBucket.offsetWidth;
 	const minFromHeightBuket = 75;
 	const widthBrick = elBrick.offsetWidth;
@@ -18,9 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	let screenHeight = document.documentElement.offsetHeight;
 	let workWidth = screenWidth - widthBrick;
 	let workHeight = screenHeight + heightBrick;
-	let removed = false;
-	let i = 0;
-	let scoreSum, lifeSum;
+	let removedBrick = false;
+	let scoreSum, lifeSum, newBrick, oldScore;
 
 	// Save name
 	(function saveName() {
@@ -83,40 +81,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		showPopup();
 	}) ();
 
-	// Randomizer --------------
-	function mtRand(min, max) {
-		return Math.floor(Math.random() * (max - min + 1) + min);
-	}
-
-	// Animate --------------
-	function animate({timing, draw, duration}) {
-		let start = performance.now();
-		
-		requestAnimationFrame(function animate(time) {
-			let timeFraction = (time - start) / duration;
-			if (timeFraction > 1) timeFraction = 1;
-		
-			let progress = timing(timeFraction);
-		
-			draw(progress);
-		
-			if (timeFraction < 1) {
-				requestAnimationFrame(animate);
-			}
-		});
-	}
-
-	// Animate fall init -----------
-	function initAnimateFall(bricks) {
-		animate({
-			timing: timeFraction => timeFraction,
-			draw: progress => {					
-				bricks.style.top = `${progress * workHeight}px`;
-			},
-			duration: mtRand(2500, 9000)
-		});
-	}
-
 	// Move Bucket --------------
 	(function moveBucket() {
 		elBucket.addEventListener('mousedown', function(e) {
@@ -153,9 +117,63 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}) ();
 
+	// Randomizer --------------
+	const mtRand = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+
+	// Animate --------------
+	const animate = ({timing, draw, duration}) => {
+		let start = performance.now();
+		
+		requestAnimationFrame(function animate(time) {
+			let timeFraction = (time - start) / duration;
+			if (timeFraction > 1) timeFraction = 1;
+		
+			let progress = timing(timeFraction);
+		
+			draw(progress);
+		
+			if (timeFraction < 1) {
+				requestAnimationFrame(animate);
+			}
+		});
+	};
+
+	// Animate fall init -----------
+	const initAnimateFall = bricks => {
+		animate({
+			timing: timeFraction => timeFraction,
+			draw: progress => {					
+				bricks.style.top = `${progress * workHeight}px`;
+			},
+			duration: mtRand(2500, 9000)
+		});
+	};
+
+	// Catch ----------------
+	const checkCatch = brick => {
+		let elBrickL = Math.floor(brick.getBoundingClientRect().left);
+		let elBrickR = Math.floor(brick.getBoundingClientRect().right);
+		let elBrickT = Math.floor(brick.getBoundingClientRect().top);
+		let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
+		let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
+		let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
+		let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
+
+		return Boolean(
+			elBrickT > elBucketT &&
+			(elBucketB - minFromHeightBuket) > elBrickT &&
+			elBrickL > elBucketL && 
+			elBrickR < elBucketR
+		);
+	};
+
+	// Fail --------------
+	const checkFail = brick => Boolean(parseInt(brick.style.top) >= screenHeight);
+	
 	// Start Game ----------------
 	document.addEventListener('click', function(e) {
 		let btnStart = e.target.closest('.start-game');
+		let speedAppearing = 3000;
 		
 		if (!btnStart) return;
 
@@ -166,52 +184,45 @@ document.addEventListener('DOMContentLoaded', function() {
 		scoreSum = 0;
 		score.textContent = scoreSum;
 
-		// Clone init --------------
-		let initBrickFall = setTimeout(function fnFall() { 
-			cloneBrick();
-			initBrickFall = setTimeout(fnFall, 3000);
-		}, 3000);
+		// Set score ---------------
+		const setScore = (score) => {		
+			if (!localStorage.getItem('score')) localStorage.setItem('score', score);
+
+			oldScore = localStorage.getItem('score');
+			
+			if (oldScore < score) localStorage.setItem('score', score);
+		};
+
+		// Game Over --------------
+		const gameOver = () => {
+			clearTimeout(initBrickFall);
+			popupEnd.classList.add('active');
+			sectionGame.classList.remove('active');
+			life.parentNode.classList.remove('active');
+			finalScore.textContent = scoreSum;
+			setScore(scoreSum);
+		};
 		
 		// Fall -------------
-		function brickFall(brick) {
+		const brickFall = brick => {
 			initAnimateFall(brick);
 
-			// Catch ----------------
-			const checkCatch = brick => {
-				let elBrickL = Math.floor(brick.getBoundingClientRect().left);
-				let elBrickR = Math.floor(brick.getBoundingClientRect().right);
-				let elBrickT = Math.floor(brick.getBoundingClientRect().top);
-				let elBucketL = Math.floor(elBucket.getBoundingClientRect().left);
-				let elBucketR = Math.floor(elBucket.getBoundingClientRect().right);
-				let elBucketT = Math.floor(elBucket.getBoundingClientRect().top);
-				let elBucketB = Math.floor(elBucket.getBoundingClientRect().bottom);
-
-				return Boolean(
-					elBrickT > elBucketT &&
-					(elBucketB - minFromHeightBuket) > elBrickT &&
-					elBrickL > elBucketL && 
-					elBrickR < elBucketR
-				);
-			};
-
-			// Fail --------------
-			const checkFail = brick => Boolean(parseInt(brick.style.top) >= screenHeight);
-
-			let initChecking = setInterval(function() {
+			let initChecking = setTimeout(function fnCheck() {
 				if (checkCatch(brick)) {
-					clearInterval(initChecking);
-					brick.parentNode.removeChild(brick);
+					brick.remove();
 					scoreSum++;
 					score.textContent = scoreSum;
 
 					if (scoreSum % 10 === 0) {
 						lifeSum++;
 						life.textContent = lifeSum;
+						speedAppearing -= 100;
 					}
+
+					return;
 				}
 
 				if (checkFail(brick)) {
-					clearInterval(initChecking);
 					brick.remove();
 					lifeSum--;
 					life.textContent = lifeSum;
@@ -220,39 +231,33 @@ document.addEventListener('DOMContentLoaded', function() {
 						lifeSum = 0;
 						life.textContent = lifeSum;
 						gameOver();
+						return clearTimeout(initChecking);
 					}
+
+					return;
 				}				
 
-				if (popupEnd.classList.contains('active')) {
-					clearInterval(initChecking);					
-					brick.remove();
-				}
+				if (popupEnd.classList.contains('active')) return brick.remove();
 
-			}, 15);
-		}
+				initChecking = setTimeout(fnCheck, 0);
+			}, 0);
+		};
 
 		// Brick clone --------------
-		function cloneBrick() {
-			brickSet[i] = elBrick.cloneNode();
-			brickSet[i].style.left = `${mtRand(0, workWidth)}px`;
-			sectionGame.appendChild(brickSet[i]);
-			brickFall(brickSet[i]);
-			i++;
+		const cloneBrick = () => {
+			newBrick = elBrick.cloneNode();
+			newBrick.style.left = `${mtRand(0, workWidth)}px`;
+			sectionGame.appendChild(newBrick);
+			brickFall(newBrick);
+			
+			if (!removedBrick) elBrick.remove();
+		};
 
-			if (!removed) {
-				elBrick.remove();
-				removed = true;
-			}	
-		}
-
-		// Game Over --------------
-		function gameOver() {
-			clearTimeout(initBrickFall);
-			popupEnd.classList.add('active');
-			sectionGame.classList.remove('active');
-			life.parentNode.classList.remove('active');
-			finalScore.textContent = scoreSum;
-		}
+		// Clone init --------------
+		let initBrickFall = setTimeout(function fnFall() { 
+			cloneBrick();
+			initBrickFall = setTimeout(fnFall, speedAppearing);
+		}, speedAppearing);
 
 	}, false);	
 });
