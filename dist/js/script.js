@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', function () {
   var popupStart = document.getElementById('popup-start');
   var popupEnd = document.getElementById('popup-end');
+  var popupRecord = document.getElementById('popup-record');
+  var recordName = popupRecord.querySelector('.table__name');
+  var recordScore = popupRecord.querySelector('.table__score');
   var sectionGame = document.getElementById('game');
   var elBucket = sectionGame.querySelector('.bucket');
   var elBrick = sectionGame.querySelector('.brick');
@@ -27,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     popupStart.classList.add('active');
 
+    if (localStorage.getItem('score')) recordScore.textContent = localStorage.getItem('score');
+
     if (localStorage.getItem('userName')) {
+      recordName.textContent = localStorage.getItem('userName');
       popupStart.classList.remove('popup--first-start');
       return form.remove();
     }
@@ -39,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (inputVal !== '') {
         localStorage.setItem('userName', inputVal);
+        recordName.textContent = localStorage.getItem('userName');
         popupStart.classList.remove('popup--first-start');
         form.remove();
       }
@@ -50,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var popups = document.querySelectorAll('.popup');
     var btnShow = document.querySelectorAll('.show-popup');
     var btnClose = document.querySelectorAll('.close-popup');
+    var btnBack = popupRecord.querySelector('.popup__back');
 
     var popupRemove = function popupRemove() {
       for (var i = 0; i < popups.length; i++) {
@@ -57,14 +65,17 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     };
 
-    var showPopup = function showPopup() {
-      for (var i = 0; i < btnShow.length; i++) {
+    var showPopup = function showPopup() {var _loop = function _loop(
+      i) {
         btnShow[i].addEventListener('click', function (e) {
           e.preventDefault();
           popupRemove();
+
+          if (btnShow[i].classList.contains('record-end')) btnBack.setAttribute('data-popup', 'popup--end');
+
           var popupClass = ".".concat(this.getAttribute('data-popup'));
           document.querySelector(popupClass).classList.add('active');
-        }, false);
+        }, false);};for (var i = 0; i < btnShow.length; i++) {_loop(i);
       }
       closePopup();
     };
@@ -186,11 +197,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Set score ---------------
     var setScore = function setScore(score) {
-      if (!localStorage.getItem('score')) localStorage.setItem('score', score);
+      if (!localStorage.getItem('score')) {
+        localStorage.setItem('score', score);
+        recordScore.textContent = localStorage.getItem('score');
+      }
 
       oldScore = localStorage.getItem('score');
 
-      if (oldScore < score) localStorage.setItem('score', score);
+      if (oldScore < score) {
+        localStorage.setItem('score', score);
+        recordScore.textContent = localStorage.getItem('score');
+      }
     };
 
     // Game Over --------------

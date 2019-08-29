@@ -32,7 +32,7 @@
 						<a href="#" class="close-popup start-game">Start game</a>
 					</li>
 					<li class="popup__item">
-						<a href="#" class="show-popup">Highscores</a>
+						<a href="#" class="show-popup" data-popup="popup--record">Record</a>
 					</li>
 				</ul>
 			</div>
@@ -48,9 +48,31 @@
 						<a href="#" class="close-popup start-game">Restart</a>
 					</li>
 					<li class="popup__item">
-						<a href="#" class="show-popup">Highscores</a>
+						<a href="#" class="show-popup record-end" data-popup="popup--record">Record</a>
 					</li>
 				</ul>
+			</div>
+		</div>
+	</div>
+	<div id="popup-record" class="popup popup--record">
+		<div class="popup__wrap">
+			<div class="popup__title">Record</div>
+			<div class="popup__inner">
+				<a href="#" class="show-popup popup__back" data-popup="popup--start">Back</a>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Score</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="table__name"></td>
+							<td class="table__score">0</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>

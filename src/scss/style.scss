@@ -263,6 +263,10 @@ body {
 			}
 		}
 	}
+
+	&__back {
+		font-size: 20px;
+	}
 }
 
 .score-final {
@@ -307,5 +311,21 @@ body {
 
 	&:hover {
 		border: 2px solid #2d3436;
+	}
+}
+
+.table {
+	width: 100%;
+	letter-spacing: 1px;
+	text-align: center;
+	margin-top: 20px;
+
+	th {
+		font-size: 20px;
+	}
+
+	td {
+		font-size: 18px;
+		padding-top: 15px;
 	}
 }

@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 	const popupStart = document.getElementById('popup-start');
 	const popupEnd = document.getElementById('popup-end');
+	const popupRecord = document.getElementById('popup-record');
+	const recordName = popupRecord.querySelector('.table__name');
+	const recordScore = popupRecord.querySelector('.table__score');
 	const sectionGame = document.getElementById('game');
 	const elBucket = sectionGame.querySelector('.bucket');
 	const elBrick = sectionGame.querySelector('.brick');
@@ -27,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		popupStart.classList.add('active');
 
+		if (localStorage.getItem('score')) recordScore.textContent = localStorage.getItem('score');
+
 		if (localStorage.getItem('userName')) {
+			recordName.textContent = localStorage.getItem('userName');
 			popupStart.classList.remove('popup--first-start');
 			return form.remove();
 		}
@@ -39,6 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			if (inputVal !== '') {
 				localStorage.setItem('userName', inputVal);
+				recordName.textContent = localStorage.getItem('userName');
 				popupStart.classList.remove('popup--first-start');
 				form.remove();
 			}
@@ -47,21 +54,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// Init popups--------------
 	(function initPopups() {
-		let popups = document.querySelectorAll('.popup');
-		let btnShow = document.querySelectorAll('.show-popup');
-		let btnClose = document.querySelectorAll('.close-popup');
+		const popups = document.querySelectorAll('.popup');
+		const btnShow = document.querySelectorAll('.show-popup');
+		const btnClose = document.querySelectorAll('.close-popup');
+		const btnBack = popupRecord.querySelector('.popup__back');
 
-		let popupRemove = function() {
+		const popupRemove = () => {
 			for (let i = 0; i < popups.length; i++) {
 				popups[i].classList.remove('active');
 			}
 		};
 
-		let showPopup = function() {
+		const showPopup = () => {
 			for (let i = 0; i < btnShow.length; i++) {
 				btnShow[i].addEventListener('click', function(e) {
 					e.preventDefault();
 					popupRemove();
+					
+					if (btnShow[i].classList.contains('record-end')) btnBack.setAttribute('data-popup', 'popup--end');
+
 					let popupClass = `.${this.getAttribute('data-popup')}`;
 					document.querySelector(popupClass).classList.add('active');
 				}, false);
@@ -69,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			closePopup();
 		};
 
-		let closePopup = function() {
+		const closePopup = () => {
 			for (let i = 0; i < btnClose.length; i++) {
 				btnClose[i].addEventListener('click', function(e) {
 					e.preventDefault();
@@ -186,11 +197,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Set score ---------------
 		const setScore = (score) => {		
-			if (!localStorage.getItem('score')) localStorage.setItem('score', score);
+			if (!localStorage.getItem('score')) {
+				localStorage.setItem('score', score);
+				recordScore.textContent = localStorage.getItem('score');
+			}
 
 			oldScore = localStorage.getItem('score');
 			
-			if (oldScore < score) localStorage.setItem('score', score);
+			if (oldScore < score) {
+				localStorage.setItem('score', score);
+				recordScore.textContent = localStorage.getItem('score');
+			}
 		};
 
 		// Game Over --------------
