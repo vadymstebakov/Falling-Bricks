@@ -265,7 +265,12 @@ body {
 	}
 
 	&__back {
-		font-size: 20px;
+		font-size: 23px;
+		transition: color .2s ease;
+
+		&:hover {
+			color: #ff3838;
+		}
 	}
 }
 
